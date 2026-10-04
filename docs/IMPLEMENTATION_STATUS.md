@@ -15,7 +15,7 @@ unit. No physical testing was performed.
 | Object dictionary | EDS/DCF parser, raw access, scaling, labels, limits, bitfields and login permissions | Bundled EDS has firmware-specific metadata; custom EDS supported |
 | NMT | Start/stop/pre-operational/reset; heartbeat monitor; bounded state polling | Simulator and independent stack tests |
 | EMCY | Error register and Sevcon fault decoding | Sevcon bytes cross-checked against OVMS/Victron; independent producer test |
-| PDO | Five live communication/mapping records, TPDO subscriptions, RPDO sends and remapping sequence | Fifth PDO requires a configured identifier; extended support must be allowed by actual EDS/firmware |
+| PDO | Five live communication/mapping records, TPDO subscriptions, RPDO sends and remapping sequence | TPDO remapping outside pre-operational follows EDS restrictions and requires firmware support; RPDO remapping requires pre-operational. Fifth PDO requires a configured identifier; extended support must be allowed by actual EDS/firmware |
 | SYNC | One-shot using live 1005h; host periodic producer | Python scheduling is not a hard real-time guarantee |
 | Host heartbeat | Producer with explicit host node id and state | Host identity must match the vehicle's heartbeat configuration |
 | Drive control | State-based enable, mode selection, quick stop/disable commands and reset edges | Does not commission vehicle application, motor or contactors |

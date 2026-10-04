@@ -169,8 +169,13 @@ source, and normal TPDO transmission requires the node to be operational.
 
 `configure_pdo()` checks all proposed values before applying the CANopen
 sequence to disable the PDO, clear the mapping, write the entries, restore
-the mapping count and enable it. The caller must be in pre-operational and
-have sufficient access. A failed remapping write leaves the PDO disabled.
+the mapping count and enable it. TPDO configuration is permitted outside
+pre-operational unless the loaded EDS marks a written entry as requiring that
+state. Login requirements still apply, and firmware may reject operational
+remapping. CANopen calls support for operational remapping
+[dynamic PDO mapping](https://www.can-cia.org/can-knowledge/pdo-protocol).
+RPDO configuration still requires pre-operational. A failed remapping write
+after the disable step leaves the PDO disabled.
 `send_rpdo()` sends raw mapped values using the live configuration;
 synchronous RPDOs apply on a later SYNC.
 

@@ -541,15 +541,18 @@ class AsyncSevconGen4:
                             cob_id: Optional[int] = None,
                             transmission_type: Optional[int] = None,
                             enabled: bool = True) -> Dict[str, Any]:
-        """Remap a PDO in pre-operational using the CiA 301 disable/clear order.
+        """Remap a PDO using the CiA 301 disable/clear order.
 
         All metadata, lengths and access permissions are checked before
         writing. A failed remapping write leaves the PDO disabled; parameters are
         not persisted until store() is called explicitly.
+        TPDO configuration follows the loaded EDS's per-entry NMT restrictions;
+        operational remapping requires firmware support for dynamic mapping.
+        RPDO configuration retains the pre-operational requirement.
         """
         comm, map_index = self._pdo_indices(is_tpdo, pdo_number)
-        if await self.nmt_state(cached=False) != _nmt.STATE_PREOP:
-            raise StateError("PDO configuration requires NMT pre-operational")
+        if not is_tpdo and await self.nmt_state(cached=False) != _nmt.STATE_PREOP:
+            raise StateError("RPDO configuration requires NMT pre-operational")
         _pdo.validate_mapping(mapping)
         if not mapping and enabled:
             raise ValueError("an enabled PDO must contain at least one mapping entry")

@@ -169,6 +169,99 @@ class TestFaultsLive(unittest.TestCase):
 
 
 class TestPdoLive(unittest.TestCase):
+    def test_tpdo_remap_while_operational_keeps_state_and_disable_sequence(self):
+        async def go():
+            dev, sim = create_pair()
+            async with dev, sim:
+                await dev.login(SIM_PASSWORD)
+                await dev.goto_operational()
+                writes = []
+                original = dev.write_raw
+
+                async def record_write(index, sub, data):
+                    writes.append((index, sub, int.from_bytes(data, "little")))
+                    await original(index, sub, data)
+
+                dev.write_raw = record_write
+                config = await dev.configure_pdo(
+                    True, 1, [(0x6041, 0, 16)],
+                    cob_id=0x180 + dev.node_id, transmission_type=255)
+                self.assertEqual(await dev.nmt_state(cached=False), 5)
+                self.assertTrue(config["enabled"])
+                self.assertEqual(config["mapping"], [(0x6041, 0, 16)])
+                self.assertEqual(writes[0][:2], (0x1800, 1))
+                self.assertTrue(writes[0][2] & 0x80000000)
+                self.assertEqual(writes[1], (0x1A00, 0, 0))
+                self.assertEqual(writes[-1], (0x1800, 1, 0x180 + dev.node_id))
+                consumer = await dev.subscribe_tpdo_live(1)
+                await sim.send_tpdo(1)
+                values = await asyncio.wait_for(consumer.updates().__anext__(), 1)
+                self.assertEqual([(v.index, v.subindex) for v in values], [(0x6041, 0)])
+        run(go())
+
+    def test_operational_tpdo_remap_respects_auth_and_eds_preop_rules(self):
+        from unittest.mock import AsyncMock
+        from sevcon_can.exceptions import AccessError
+
+        async def go():
+            dev, sim = create_pair()
+            async with dev, sim:
+                await dev.login(SIM_PASSWORD)
+                await dev.goto_operational()
+                await dev.logout()
+                original = dev.write_raw
+                dev.write_raw = AsyncMock()
+                with self.assertRaises(AccessError):
+                    await dev.configure_pdo(True, 1, [(0x6041, 0, 16)])
+                dev.write_raw.assert_not_awaited()
+                dev.write_raw = original
+                await dev.login(SIM_PASSWORD)
+                dev.write_raw = AsyncMock()
+                # A matching firmware EDS can still require pre-op for a mapping entry.
+                dev.variable(0x1A00, 1).preop_only = True
+                with self.assertRaises(AccessError):
+                    await dev.configure_pdo(True, 1, [(0x6041, 0, 16)])
+                dev.write_raw.assert_not_awaited()
+        run(go())
+
+    def test_operational_tpdo_remap_propagates_firmware_rejection(self):
+        from sevcon_can.exceptions import SdoAbortError
+
+        async def go():
+            dev, sim = create_pair()
+            async with dev, sim:
+                await dev.login(SIM_PASSWORD)
+                await dev.goto_operational()
+                original = sim._sdo_write
+
+                def reject_mapping(index, sub, data):
+                    if index == 0x1A00:
+                        raise SdoAbortError(0x08000022, index, sub)
+                    return original(index, sub, data)
+
+                sim._server.write = reject_mapping
+                with self.assertRaises(SdoAbortError) as caught:
+                    await dev.configure_pdo(True, 1, [(0x6041, 0, 16)])
+                self.assertEqual(caught.exception.code, 0x08000022)
+                self.assertTrue((await dev.read(0x1800, 1)).raw & 0x80000000)
+                self.assertEqual(await dev.nmt_state(cached=False), 5)
+        run(go())
+
+    def test_rpdo_remap_still_requires_preop(self):
+        from unittest.mock import AsyncMock
+        from sevcon_can.exceptions import StateError
+
+        async def go():
+            dev, sim = create_pair()
+            async with dev, sim:
+                await dev.login(SIM_PASSWORD)
+                await dev.goto_operational()
+                dev.write_raw = AsyncMock()
+                with self.assertRaises(StateError):
+                    await dev.configure_pdo(False, 1, [(0x6071, 0, 16)])
+                dev.write_raw.assert_not_awaited()
+        run(go())
+
     def test_tpdo_subscribe_and_decode(self):
         async def go():
             dev, sim = create_pair()
