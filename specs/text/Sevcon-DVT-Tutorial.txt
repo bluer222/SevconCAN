@@ -1,0 +1,343 @@
+Using DVT with Gen4 Systems
+
+Introduction:
+The DVT software can be installed on a PC to allow engineers and service technician’s access to
+adjustments and allows them to monitor status of a Sevcon Gen4 motor controllers. This document
+covers some DVT basics.
+
+
+
+
+Requirements:
+   -   IXXAT Model - 1.01.0087.10200 (w/galvanic isolation) USB to CAN adapter, Sevcon part #
+       661/30132.
+   -   CD with DVT software, provided by Sevcon.
+
+
+
+
+Starting DVT:
+
+           Click and Start DVT. The Screen will appear as shown below.
+
+
+
+
+                                                                                                  1
+                                       Scrolling Text Showing
+                                       CAN Bus Traffic.                        Press for Helper
+                                                                          Screen.
+
+
+
+
+                                                            If Not Seeing CAN Traffic
+                                                            Select Other Baud Rates
+                                                            Until Traffic Starts.
+
+
+
+
+                               Type in flts and Press Enter, to Show
+                               Active Faults.
+
+
+If not seeing CAN Bus Traffic after trying other Baud Rates, check connections between IXXAT and
+Computer. Also check connections between Gen4 and IXXAT, recycle power on controller and
+restart DVT.
+
+
+DVT Helper Screen                 :
+
+The DVT helper screen is where setting changes are made and controller status is monitored.
+
+
+
+
+                                                   Press to Get Controller Information and
+                                                   Show Controller SW & HW Version.
+
+
+
+
+                                                                                                   2
+                                         Press to Show Active
+                                         Fault Info.
+
+
+
+
+                                                                       CAN Node. For
+                                                                       single standalone
+                                                                       Gen4 Controller ,
+                                                                       select 1 .
+
+
+
+
+                                    Press Go Preoperational Before
+                                    Making Setting Changes.
+
+                   Press Go Operational When
+                   Done Making Setting Changes.
+
+
+
+
+The Go Preoperational mode disables the controller so that the motor will not run while adjustments
+are being made. When selecting Go Preoperational Mode, you will hear the line contactor drop out.
+
+
+The Go Operational mode must be selected after settings changes are made and confirmed. The
+controller will not run the motor until Go Operational is selected. When Go Operational mode is
+selected you should hear the line contactor close.
+
+
+
+
+                                                                                                  3
+Making adjustments:
+
+Keep in mind that you must press “Go Preoperational” before making settings changes.
+
+
+Reducing Maximum Motor Speed.
+
+
+                        Select Tree Tab for
+                        Settings List.
+
+
+
+
+                                  Select Profiles , Then                     Max Forward
+                                  Select “Baseline Profile”.                 Motor Speed.
+
+
+                                                                                   Max Reverse
+                                                                                   Motor Speed.
+
+
+
+
+                                              Once Settings are Changed
+                                              Press Load Values.
+
+
+
+
+Keep in mind that raising these max speeds higher than the rated maximum speed of the motor will
+cause some undesired results.
+
+Once settings are changed, click the “Load Values” button.
+You must press “Go Operational” after making settings changes.
+Controller Will Not Run In Preoperational Mode.
+
+                                                                                                   4
+Contactor Setup Adjustments.
+
+
+The contactor setup allows you to set the line contactor pull in voltage and holding voltage. This
+would also allow you to us a 24 Volt Line contactor on a 72 Volt system or at any system voltage.
+
+
+
+                         Select Tree Tab for
+                         Settings List.
+
+
+
+
+                                                 Select Configuration / Contactor Setup /
+                                                 Voltages to Access Contactor Voltage
+                                                 Settings.
+
+
+
+
+                                            Once Settings are Changed
+                                            Press Load Values.
+
+
+
+
+Once settings are changed, click the “Load Values” button.
+
+You must press “Go Operational” after making settings changes.
+
+Controller Will Not Run In Preoperational Mode.
+
+
+
+
+                                                                                                     5
+Changing Throttle Settings.
+
+
+                              Select Tree Tab for            Select Configuration &
+                              Settings List.                 Then Throttle Setup.
+
+
+
+
+                                            Once Settings are Changed
+                                            Press Load Values.
+
+
+
+
+Throttle Start Voltage 1 = Voltage on throttle input, with throttle at minimum speed. It is
+recommended that you add .2 Volts to the actual value, to allow for some dead band at the
+beginning of the throttle travel.
+
+Throttle Start Value 1 = This is always set to 0.0.
+
+Throttle End Voltage 1 = Voltage on throttle input, with throttle at maximum speed. It is
+recommended that you subtract .2 volts from the actual value, to allow for some dead band at the
+end of throttle travel.
+
+Throttle End Value 1 = This is always set to 1.0.
+
+Once settings are changed, click the “Load Values” button.
+
+You must press “Go Operational” after making settings changes.
+
+Controller Will Not Run In Preoperational Mode.
+
+
+
+
+                                                                                                   6
+Status:
+Checking Throttle Voltages.
+
+
+
+The “Raw Analogue Inputs” screen shows actual throttle voltage on Analogue inputs, as shown
+below. Typically when using just a throttle, the varying throttle voltage will be shown next to the
+“Analogue Input 1 Voltage”, check this voltage with accelerator fully released (= Throttle Start
+Voltage 1 setting + .2 Volts) and then again with accelerator fully depressed (= Throttle End Voltage
+1 setting - .2 Volts).
+
+
+
+
+                                      Select Status & Then
+                                      Raw Analogue Inputs.
+
+
+
+
+                                                                                                        7
+Saving and Sending Settings File (DCF):
+
+
+In DVT we refer to a Gen 4 settings file as a “DCF” (Device Configuration File).
+
+
+Select DVT Helper         .
+
+Select Settings:
+
+    -   Save DCF: Clicking this will allow you to save the settings stored in a Gen4 controller; the
+        settings will be saved as a .DCF. This file can be downloaded into other controllers of the
+        same hardware and software. Saving a DCF does not require you to be in Preoperational
+        Mode.
+    -   Send DCF to Unit: Clicking this will allow you to send a .DCF file to a controller, as long as the
+        file was created on the same hardware & software platform. Before sending A DCF to a
+        controller, you are required to be in Preoperational Mode.
+
+Notes: You must be in Preoperational Mode before Sending a DCF to a Gen4 controller, once the file
+is downloaded into the controller you will be instructed to recycle the key switch power. The Go
+Operational button will need to be clicked before the Gen4 will become operational again.
+
+
+
+
+                                                        Select Preoperational Mode Before
+                                                        Sending a DCF to a Gen4 Controller.
+
+
+
+
+                                                        Select Operational When Done With
+                                                        Process.
+
+
+
+
+                                                                                                         8
+Motor Temperature Control:
+
+
+
+                                 Set this to “None” if not using motor
+                                 Temperature sensor.
+
+
+
+
+The Go Operational button will need to be clicked before the Gen4 will become operational again.
+
+
+
+
+                                                                                                   9
+Downloading Software (dld File) into the Gen4:
+It is very important that when downloading software into the controller that battery power to the
+controller does not get interrupted during the process.
+
+Have the software (dld file) saved somewhere on your computer ready for installing.
+
+
+
+
+                              In DVT Screen Command Line Box.
+                              Type the command bts 1 then press enter.
+
+
+
+
+Type in the command bts 1 and press the enter key. This puts the controller in boot loader mode and
+the controller is now ready to accept the new software. Note that when the controller goes into
+boot loader mode, the green LED on top of the Gen4 will flicker and go out. It is important that the
+controller remains powered on now until software is loaded and we exit boot loader mode.
+
+
+
+
+                                           Type the command load_dld 1 and press
+                                           enter.
+
+
+
+
+                                                                                                    10
+Once you type the command load_dld 1 and press enter, you will then be prompted to a file
+directory, find your dld software file and press enter.
+
+
+
+
+                                              As the software is down loading, you will
+                                              see a series of dots being created. Once
+                                              the software is done downloading (at the
+                                              end of the dots) it will say OK.
+
+
+
+
+Once you get the OK message type the command bte 1, this forces the controller to exit boot loader
+mode.
+
+When exiting boot loader mode, the controller LED will turn back on and you are now ready to install
+the settings (dcf) file.
+
+Note; that is for some reason this software download process gets interrupted, do not exit boot
+loader mode, but instead recycle or re-apply power to the controller and start over again.
+
+
+
+
+                                                                                                  11
+

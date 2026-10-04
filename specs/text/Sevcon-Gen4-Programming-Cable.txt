@@ -1,0 +1,66 @@
+    5                       4                                                3                          2                                            1
+
+
+
+
+D                                                                                                                                                                       D
+                                                                                                                           5
+                                                                                                                           9         JP1
+                                                                                                                           4
+                                 GEN4-1                                                                                    8
+                                                                                                  N°36 - GND               3
+                            11                                                     13             N°13 - CAN-High          7
+                                  Cont3                              CAN High                     N°24 - CAN-Low
+                             7    Cont2                               CAN Low      24                                      2
+                             3    Cont1                              CAN Term      2                                       6
+                                                                                                                           1
+                                                           CAN Power Supply        28
+                             4                                                     16                                 DB 9 broches femelle CAN
+                                  Cont1 Supply                    CAN High
+                             8    Cont2 Supply                    CAN Low          27
+                            12    Cont3 Supply
+
+
+                                                                      Pot Brake    23
+                            10    +5V / Key Switch
+C
+        KEY SWITCH           1    Key Switch
+                                                                                                                                                                        C
+                             6    Key Switch           +10V Alim Pot Throttle      34
+                                                                 Pot Throttle      22
+
+                            26    +5V/+10V Encoder
+                            21    P.S.T. / Sin input - DI8        Forward - DI1    18
+                            35    +10V Pot Brake / Cos input
+                            15    0V Encoder                      Reverse - DI2    30
+
+                                                               Foot Switch - DI3   19
+                             5    Encoder U
+                            17    Encoder V                    Seat Switch - DI4   31
+                            29    Encoder W
+                                                               Handbrake - DI5     20
+                            14    Encoder A
+                            25    Encoder B          Driveability Select 1 - DI6   9
+
+B
+                            33    Thermistor         Driveability Select 2 - DI7   32                                                                                   B
+
+                     N°36   B-
+           -BAT                   B-
+
+                                 SEVCON GEN4 controller
+
+
+
+
+A                                                                                                                                                                       A
+
+                                                                                        Title
+                                                                                                Cablâge du connecteur 35 broches
+
+                                                                                        Size    Document Number                                                   Rev
+                                                                                          A     Projet : KES2 \ ORCAD \ GEN4-35B \ GEN4-35B.opj                     1
+
+                                                                                        Date:     Thursday, October 10, 2019       Sheet         2       of   2
+    5                       4                                                3                          2                                            1
+

@@ -1,0 +1,3687 @@
+   Gen4
+
+Applications
+ Reference
+  Manual
+
+ Document no:
+  177/52701
+
+
+    Rev. 2
+Sevcon Ltd
+Kingsway South
+Gateshead, NE11 0QA
+England
+Tel +44 (0)191 497 9000
+Fax +44 (0)191 482 4223
+sales.uk@sevcon.com
+
+Sevcon, Inc.
+155 Northboro Road
+Southborough, MA 01772
+USA
+Tel (508) 281 5500
+Fax (508) 281 5341
+sales.us@sevcon.com
+
+Sevcon SA
+12 Rue Jean Poulmarch
+95100 Argenteuil
+France
+Tel +33 (0)1 34 10 95 45
+Fax +33 (0)1 34 10 61 38
+sales.fr@sevcon.com
+
+Sevcon Japan
+4-12-1 Shinbashi
+Minato-Ku, Tokyo 105-0004
+Japan
+Tel +81 (0) 3 (5408) 5670
+Fax +81 (0) 3 (5408) 5677
+sales.jp@sevcon.com
+
+Sevcon Asia Ltd
+4th Floor, Eun-Hyae Building
+463-1, Sang-dong
+Wonmee-gu, Bucheon City
+Kyunggi-do 420-030
+Korea
+Tel +82 (0)32 215 5070
+Fax +82 (0)32 215 8027
+sales.kr@sevcon.com
+
+www.sevcon.com
+Table of Contents
+Chapter 1:                     Introduction                                                                                                        1-1
+ About Gen4 documentation ................................................................... 1-2
+    This version of the manual .............................................................................................................. 1-2
+    Copyright ........................................................................................................................................ 1-2
+    Scope of this manual ....................................................................................................................... 1-2
+    Related documents .......................................................................................................................... 1-2
+    Drawings and units ......................................................................................................................... 1-2
+    Warnings, cautions and notes .......................................................................................................... 1-3
+
+ Product identification label .................................................................... 1-4
+ Technical support ................................................................................... 1-4
+ Product warranty .................................................................................... 1-4
+
+Chapter 2:                     About the Gen4                                                                                                      2-1
+ Introduction ............................................................................................ 2-2
+ Standard features and capabilities ......................................................... 2-2
+    Available options ............................................................................................................................ 2-2
+    Intended use of the Gen4 ................................................................................................................ 2-3
+    Available accessories ...................................................................................................................... 2-3
+
+ Overview of a truck drive system .......................................................... 2-5
+ Principles of operation ........................................................................... 2-6
+    Functional description ..................................................................................................................... 2-6
+    Interfaces ......................................................................................................................................... 2-8
+    Master-slave operation .................................................................................................................... 2-8
+    Torque mode ................................................................................................................................... 2-9
+    Speed mode ..................................................................................................................................... 2-9
+
+ Safety and protective functions ........................................................... 2-10
+    General .......................................................................................................................................... 2-10
+    Fault detection and handling ......................................................................................................... 2-12
+ Chapter 3:                        Installation                                                                                                        3-1
+     Mounting Gen4 ...................................................................................... 3-2
+        Orientation ...................................................................................................................................... 3-2
+        Clearance for LED access ............................................................................................................... 3-2
+        Mounting hole pattern ..................................................................................................................... 3-2
+        Equipment required:........................................................................................................................ 3-3
+
+     Cooling requirements ............................................................................. 3-3
+     EMC guidelines ..................................................................................... 3-4
+     Connecting power cables ....................................................................... 3-5
+        Battery and motor connections ....................................................................................................... 3-5
+        Cable sizes ...................................................................................................................................... 3-6
+
+     On-board fuse mounting ........................................................................ 3-7
+        Fuse rating and selection ................................................................................................................. 3-8
+
+     Signal wiring .......................................................................................... 3-9
+        Signal wire sizes ............................................................................................................................. 3-9
+        CANbus termination ....................................................................................................................... 3-9
+
+     Signal connections ............................................................................... 3-10
+
+ Chapter 4:                        Specification                                                                                                       4-1
+     Electrical ................................................................................................ 4-2
+        Input voltage ................................................................................................................................... 4-2
+        Output protection ............................................................................................................................ 4-2
+        Output ratings ................................................................................................................................. 4-3
+        CAN interface ................................................................................................................................. 4-4
+        Control inputs and outputs .............................................................................................................. 4-4
+        Isolation .......................................................................................................................................... 4-4
+        EMC ................................................................................................................................................ 4-5
+        Regulatory compliance ................................................................................................................... 4-5
+
+     Mechanical ............................................................................................. 4-6
+        Operating environment ................................................................................................................... 4-6
+        Shock and vibration ........................................................................................................................ 4-6
+        Weight ............................................................................................................................................. 4-6
+
+
+
+                                                                                                                                           Doc. # 177/52701
+ii                                                                                                                                                     Rev2
+      Dimensions ..................................................................................................................................... 4-7
+      Size 4 models .................................................................................................................................. 4-7
+
+
+ Chapter 5:                     System design                                                                                                     5-1
+   Sizing a motor ........................................................................................ 5-2
+      Information required about the application ..................................................................................... 5-2
+      Motor maximum speed ................................................................................................................... 5-2
+      Torque required between zero and base speed ................................................................................ 5-2
+      Torque required at maximum speed ................................................................................................ 5-3
+      Continuous power rating ................................................................................................................. 5-4
+      Peak power rating ........................................................................................................................... 5-4
+
+   Selecting the Gen4 model ...................................................................... 5-4
+      Current and power ratings considerations ....................................................................................... 5-4
+      Power output restrictions at motor and drive operating temperature limits .................................... 5-4
+      Circuit configuration ....................................................................................................................... 5-5
+      Single traction wiring diagram ........................................................................................................ 5-6
+      Single pump wiring diagram ........................................................................................................... 5-7
+
+   Twin motor systems ............................................................................... 5-8
+   Auxiliary components ............................................................................ 5-8
+      Main contactor ................................................................................................................................ 5-8
+      35 Way AMPSeal Connector Kit .................................................................................................... 5-9
+      Emergency stop switch ................................................................................................................... 5-9
+      On-board fuse ................................................................................................................................. 5-9
+      Key switch fuse F2........................................................................................................................ 5-11
+      Motor speed sensor (encoder) ....................................................................................................... 5-11
+      Motor commutation sensor (U, V, W) .......................................................................................... 5-12
+
+   Initial power up sequence .................................................................... 5-13
+      Checks prior to power up .............................................................................................................. 5-13
+      Checks after power is applied ....................................................................................................... 5-13
+
+
+ Chapter 6:                     Configuration                                                                                                     6-1
+   Introduction ............................................................................................ 6-2
+   DriveWizard configuration tool ............................................................. 6-2
+
+Doc. # 177/52701
+Rev. 2                                                                                                                                                 iii
+        DriveWizard functionality with lowest access level ....................................................................... 6-3
+        Status bars ....................................................................................................................................... 6-3
+        Saving, duplicating and restoring a node‟s configuration ............................................................... 6-3
+        Data monitoring .............................................................................................................................. 6-4
+
+     CANopen ............................................................................................... 6-4
+        CANopen protocol .......................................................................................................................... 6-4
+        Communication models .................................................................................................................. 6-4
+        Object Dictionary ............................................................................................................................ 6-4
+        Communication objects .................................................................................................................. 6-5
+
+     Configuration process overview ............................................................ 6-7
+        Access authorization ....................................................................................................................... 6-7
+        How NMT state affects access to parameters ................................................................................. 6-8
+
+     Motor characterization ........................................................................... 6-8
+        Determining motor parameters ....................................................................................................... 6-8
+        Self characterization...................................................................................................................... 6-10
+
+     I/O configuration.................................................................................. 6-10
+        Manual object mapping ................................................................................................................. 6-11
+        Automatic Configuration Mapping ............................................................................................... 6-14
+        Encoder ......................................................................................................................................... 6-15
+        Digital inputs................................................................................................................................. 6-16
+        Analog inputs ................................................................................................................................ 6-16
+        Analog (contactor) outputs............................................................................................................ 6-17
+
+     Vehicle performance configuration ..................................................... 6-19
+        Safety Interlocks ........................................................................................................................... 6-19
+        Torque mode/speed mode ............................................................................................................. 6-20
+        Throttle.......................................................................................................................................... 6-20
+        Acceleration and braking .............................................................................................................. 6-23
+        Footbrake ...................................................................................................................................... 6-23
+        Steering inputs – twin driving motor systems ............................................................................... 6-23
+        Drivability profiles ........................................................................................................................ 6-25
+        Controlled roll-off ......................................................................................................................... 6-27
+        Hill hold ........................................................................................................................................ 6-27
+        Inching .......................................................................................................................................... 6-27
+        Drivability select switches ............................................................................................................ 6-27
+
+
+
+                                                                                                                                          Doc. # 177/52701
+iv                                                                                                                                                    Rev2
+      Economy ....................................................................................................................................... 6-28
+      Pump configuration ....................................................................................................................... 6-28
+      Power steer configuration ............................................................................................................. 6-29
+
+   Vehicle features and functions ............................................................. 6-30
+      Contactors ..................................................................................................................................... 6-30
+      Line contactor dropout .................................................................................................................. 6-30
+      Electro-mechanical brake .............................................................................................................. 6-30
+      External LED ................................................................................................................................ 6-31
+      Alarm buzzer ................................................................................................................................. 6-31
+      Brake Lights .................................................................................................................................. 6-31
+      Horn .............................................................................................................................................. 6-31
+      Service indication.......................................................................................................................... 6-31
+      Traction motor cooling fan ........................................................................................................... 6-32
+      Motor over-temperature protection ............................................................................................... 6-32
+      Battery protection.......................................................................................................................... 6-32
+      Vehicle hours counters .................................................................................................................. 6-34
+
+
+ Chapter 7:                      Monitoring Gen4                                                                                                            1
+   Reading status variables............................................................................. 2
+      Motor measurements .......................................................................................................................... 2
+      Heatsink temperature ......................................................................................................................... 2
+      Identification and version................................................................................................................... 2
+      Battery monitoring ............................................................................................................................. 2
+      Hours counters ................................................................................................................................... 3
+
+   Logging ...................................................................................................... 3
+      FIFO event logs ................................................................................................................................. 3
+      Event counters.................................................................................................................................... 4
+      Operational monitoring ...................................................................................................................... 4
+
+   CANopen abort code ................................................................................. 4
+   Faults and warnings ................................................................................... 6
+      Introduction ........................................................................................................................................ 6
+      Fault identification ............................................................................................................................. 6
+      Fault list ............................................................................................................................................. 8
+      Clearing faults .................................................................................................................................... 9
+
+
+Doc. # 177/52701
+Rev. 2                                                                                                                                                        v
+     Upgrading the controller software ............................................................. 9
+
+ Appendices                                                                                                                                               1
+     Automatic Configuration Tables ............................................................... 1
+       Digital Inputs ..................................................................................................................................... 1
+       Analogue Inputs ................................................................................................................................. 2
+       Analogue Outputs .............................................................................................................................. 3
+
+
+
+
+                                                                                                                                        Doc. # 177/52701
+vi                                                                                                                                                  Rev2
+ Chapter 1:
+Introduction
+About Gen4 documentation
+This version of the manual
+This version of the Gen4 manual replaces all previous versions. Sevcon has made every effort
+to ensure this document is complete and accurate at the time of printing. In accordance with
+our policy of continuing product improvement, all data in this document is subject to change
+or correction without prior notice.
+
+Copyright
+This manual is copyrighted 2008 by Tech/Ops Sevcon. All rights are reserved. This manual
+may not be copied in whole or in part, nor transferred to any other media or language,
+without the express written permission of Tech/Ops Sevcon.
+
+Scope of this manual
+The Application Reference Manual provides important information on configuring lift and
+traction drive systems using Gen4 controllers as well as details on sizing and selecting system
+components, options and accessories.
+
+The manual also presents important information about the Gen4 product range.
+
+Related documents
+The following documents are available from Sevcon:
+
+     The Object Dictionary providing important information about CANopen communication
+      with Gen4.
+
+     Device Configuration Files (DCF) and Electronic Data Sheets (EDS) for each Gen4 model
+      and revision.
+
+Drawings and units
+Orthographic illustrations in this manual are drawn in Third Angle Projection. SI units are
+used throughout this manual.
+
+
+
+
+                                                                                  Doc. # 177/52701
+1-2                                                                                           Rev2
+                                                                        Introduction
+
+
+Warnings, cautions and notes
+Special attention must be paid to the information presented in Warnings, Cautions and
+Notes when they appear in this manual. Examples of the style and purpose of each are
+shown below:
+
+
+
+
+A WARNING is an instruction that draws attention to the risk of injury or death and tells
+you how to avoid the problem.
+
+
+
+
+A CAUTION is an instruction that draws attention to the risk of damage to the product,
+process or surroundings.
+
+
+
+
+A NOTE indicates important information that helps you make better use of your Sevcon
+product.
+
+
+
+
+Doc. # 177/52701
+Rev. 2                                                                                   1-3
+Product identification label
+If you have a customized product your unique identifier will appear at the end of the Type
+number. When discussing technical issues with Sevcon always have your product‟s Type
+number, Part number and Serial number available. Figure 1 shows a typical product
+identification label.
+
+
+
+
+Figure 1 Product identification label
+
+
+
+Technical support
+For technical queries and application engineering support on this or any other Sevcon
+product please contact your nearest Sevcon sales office listed on the inside front cover of
+this manual. Alternatively you can submit enquiries and find the details of the nearest
+support center through the Sevcon website, www.sevcon.com.
+
+
+
+Product warranty
+Please refer to the terms and conditions of sale or contract under which the Gen4 was
+purchased for full details of the applicable warranty.
+
+
+
+
+                                                                                  Doc. # 177/52701
+1-4                                                                                           Rev2
+  Chapter 2:
+About the Gen4
+Introduction
+Sevcon Gen4 controllers are designed to control 3-phase AC induction motors and
+Permanent Magnet AC ( PMAC) motors in battery powered traction and pump applications.
+A range of models is available to suit a wide number of applications and cooling regimes.
+
+The controller adapts its output current to suit the loading conditions and the ambient in
+which it is operating (temporarily shutting down if necessary). It will also protect itself if
+incorrectly wired.
+
+Signal wiring and power connections have been designed to be as simple and straight
+forward as possible. Analog and digital signal inputs and outputs are provided for switches,
+sensors, contactors, hydraulic valves and CAN communications. These electrical signals can
+be mapped to Gen4‟s software functions to suit a wide range of traction and pump
+applications.
+
+Given Gen4‟s mapping versatility it is important to ensure you map your application signals
+to the correct software functions (see „Manual object mapping‟ on page 6-11). A common
+configuration is supplied by default which may suit your needs or act as a starting point for
+further configuration.
+
+Configuration and control of Gen4 is fully customizable using Sevcon‟s Calibrator handset or
+DriveWizard, an intuitive Windows based configuration software tool.
+
+A single green LED is provided to give a visual indication of the state of the controller. This
+signal can be replicated on a dashboard mounted light for example.
+
+
+
+Standard features and capabilities
+Available options
+There are two mechanical package options (Figure 2) for the Gen4 controller at each voltage
+and current rating.
+
+
+
+
+                                                                                      Doc. # 177/52701
+2-2                                                                                               Rev2
+                                                                      About the Gen4
+
+
+
+
+                    Frame size 4                                  Frame size 6
+
+Figure 2 Mechanical package options
+
+Intended use of the Gen4
+The Gen4 motor controller can be used in any of these main applications for both pump and
+traction control:
+
+    Counterbalanced, warehouse and pedestrian fork lift trucks
+     (Classes 1 to 3, FLT1, 2 & 3)
+
+    Airport ground support (AGS), including tow tractors
+
+    Utility vehicles
+
+    Burden carriers
+
+    Sweepers and scrubbers
+
+    Golf buggies/carts
+
+    Neighborhood electric vehicles (NEV)
+
+    Scooters
+
+    Marine
+
+Available accessories
+The following accessories are available from Sevcon
+
+    Loose equipment kit (connectors and pins) for Gen4
+
+    Gen4 cooling kit
+
+    CANopen Calibrator Handset
+
+
+
+Doc. # 177/52701
+Rev. 2                                                                                2-3
+     SmartView™ display
+
+     ClearView™display
+
+     Hourmeters
+
+     Contactors
+
+     Fuses
+
+     Drive Wizard - PC based configuration tool
+
+     SCWiz – PC based motor characterisation tool
+
+
+
+
+                                                     Doc. # 177/52701
+2-4                                                              Rev2
+                                                                              About the Gen4
+
+
+
+
+Overview of a truck drive system
+Each traction or pump application requires a number of system components. The main
+components (excluding control inputs such as throttle and seat switch) are shown in Figure 3.
+In this example there are two controllers, a traction motor and a hydraulic pump, however all
+the main components would be the same if controller 2 was also powering a traction motor.
+
+Communication between the controllers is achieved using the CANopen protocol. This
+protocol also allows Gen4 to communicate with other non-Sevcon, CANopen compliant
+devices.
+
+                         control fuse
+                                      key switch
+                           line contactor                            CAN bus
+              isolator
+
+
+
+
+                                        B- B+     +        signals   B- B+     +        signals
+  + -
+  battery
+                                          Gen4 controller 1            Gen4 controller 2
+
+                                                M1 M2 M3                     M1 M2 M3
+
+
+                                                      3ø                           3ø
+
+
+                                                 motor                        pump
+
+
+Figure 3 Truck system components
+
+Signal power for the internal control circuits and software is derived from the battery via the
+control fuse and key switch as shown. No external in-rush current limiting is needed as long
+as Gen4 is used to control the line contactor and hence the timing of its closure. The
+software controls the start up sequence in this order:
+
+1. Charge the input capacitors to within 10V of battery voltage (via the key switch signal
+     line).
+
+2. Close line contactor.
+
+
+
+Doc. # 177/52701
+Rev. 2                                                                                            2-5
+3. Generate output to the motor as demanded.
+
+A line input fuse can be mounted on the body of the controller. The „B+‟ terminal is a
+dummy terminal. If the fuse is mounted elsewhere, connections from the battery positive are
+made to the controller „+‟ terminal.
+
+
+
+Principles of operation
+Functional description
+The main function of Gen4 is to control the power to 3-phase squirrel-cage AC induction or
+PMAC motors in electric vehicles. Four-quadrant control of motor torque and speed (driving
+and braking torque in the forward and reverse directions) is allowed without the need for
+directional contactors. Regenerative braking is used to recover kinetic energy which is
+converted into electrical energy for storage in the battery.
+
+In a traction application control commands are made by the driver using a combination of
+digital controls (direction, foot switch, seat switch, etc.) and analog controls (throttle and foot
+brake). The controller provides all the functions necessary to validate the driver‟s commands
+and to profile the demand for speed and torque according to stored parameters.
+
+Throttle inputs can be configured as speed or torque-speed demands with throttle-
+dependent speed limits: in either case, a torque demand is continually calculated to take
+account of pre-set limits on the level and rate-of-change of torque. The torque demand is
+used to calculate current demands; that is, the controller calculates what currents will be
+required within the motor to generate the required torque.
+
+There are two distinct components of the current, known as the d-q axis currents, which
+control current flow in the motor. The d-axis current is responsible for producing magnetic
+flux, but does not by itself produce torque. The q-axis current represents the torque-
+producing current.
+
+When a vehicle is ready to drive, but no torque is being demanded by the driver, the d-axis
+or magnetizing current will be present in the motor so that the vehicle will respond
+immediately to a torque demand. To save energy the magnetizing current is removed if the
+vehicle is stationary and no torque has been demanded after a set period.
+
+Measured phase currents and current demands id and iq, the d-q axis currents, are used as
+part of a closed-loop control system to calculate the necessary voltage demands for each
+
+
+
+
+                                                                                     Doc. # 177/52701
+2-6                                                                                              Rev2
+                                                                        About the Gen4
+
+
+phase of the motor. Voltage demands are then turned into PWM demands for each phase
+using the Space Vector Modulation (SVM) technique. SVM ensures optimum use of the
+power semiconductors.
+
+Power conversion section
+The power conversion section of Gen4 employs a 6-switch MOSFET bridge operating at an
+effective frequency of 16 kHz. Excellent electrical and thermal efficiency is achieved by:
+
+    Minimization of thermal resistances.
+
+    Use of the latest MOSFET technology
+
+    Internal thermal protection (if temperatures are excessive, output torque is reduced).
+
+    Overcurrent protection using device characteristics.
+
+    Internal measurement of output current.
+
+    Overvoltage trip in the event of regenerative braking raising battery voltage to unsafe
+     levels.
+
+
+
+
+Doc. # 177/52701
+Rev. 2                                                                                         2-7
+Dual traction motor
+In the case of dual traction motors, there is additional processing of the associated steering
+signal (from a potentiometer or switches) in order to generate separate torque demands for
+the left and right motors of the vehicle. This allows the two motors to be operated at
+different speeds, which greatly assists in turning the vehicle and prevents wheel scrub. After
+the torque demands have been generated, the operation of each motor control system is as
+described in the case of a single traction motor.
+
+Pump motors
+Pump motor control is similar to traction motor control, although motion is requested using
+a different combination of switches.
+
+Interfaces
+In addition to its motor control functions, Gen4 offers many other functions designed to
+interface with electric vehicles. A variety of digital and analog input sources are supported, as
+listed in „Signal connections‟ on page 3-10.
+
+Voltage and current control of up to three contactors or proportional valves is provided by
+Gen4, and includes built-in freewheeling diodes for spike suppression. All I/O on the Gen4
+controller is protected against short-circuit to the battery positive and negative terminals.
+
+Connectivity and interoperability with other system devices (for example another Gen4
+controller) using a CANbus and the CANopen protocol is provided. In addition to in-service
+operation, the CANopen protocol allows the controller to be commissioned using the
+Calibrator handset or Sevcon‟s DriveWizard tool. In addition Sevcon‟s SCWiz PC based tool
+provides the function to self-characterise most induction motors and hence simplify the
+process of putting a new motor into service.
+
+For simple visual diagnosis of system faults and to monitor system status, a green LED is
+provided on the body of the controller. It is continuously lit when there is no fault but
+flashes a different number of times, in a repeated pattern, when there is a fault. The number
+of flashes indicates the type of fault (see „LED flashes‟ on page 6).
+
+Master-slave operation
+The Gen4 controller contains both master and slave functions as shown in Figure 4. They
+operate as follows:
+
+
+
+
+                                                                                    Doc. # 177/52701
+2-8                                                                                             Rev2
+                                                                      About the Gen4
+
+
+     Slave function: implements the CANopen Generic I/O Profile (DS402) and the Drives and
+      Motion Control Profile (DSP401).
+
+     Master function: implements vehicle functionality (traction and pump control) and
+      CANopen network management.
+
+    Controller
+
+               master CANopen
+              function
+
+
+
+
+       I/O          motor
+      slave         slave
+
+
+      to motors, switches,
+          pedals etc
+
+Figure 4 Single controller
+
+Torque mode
+In this mode Gen4 maintains the motor torque output at a constant value for a given throttle
+position. This is similar to DC motors (in particular, series wound DC motors) and provides a
+driving experience like a car. To prevent excessive speed when the load torque is low, for
+example when driving down hill, a maximum vehicle speed can be set.
+
+Speed mode
+In this mode Gen4 maintains the motor at a constant speed for a given throttle position as
+long as sufficient torque is available. Speed mode differs from torque mode in that the
+torque value applied to the motor is calculated by the controller based on the operator‟s
+requested speed (determined by throttle position) and the vehicle‟s actual speed. This mode
+is useful where accurate speed control is required irrespective of the motor torque.
+
+
+
+
+Doc. # 177/52701
+Rev. 2                                                                                       2-9
+Safety and protective functions
+General
+Electric vehicles can be dangerous. All testing, fault-finding and adjustment should be
+carried out by competent personnel. The drive wheels should be off the floor and free
+to rotate during the following procedures. The vehicle manufacturer's manual should be
+consulted before any operation is attempted.
+
+
+
+
+The battery must be disconnected before replacing the controller or one of its fans.
+After the battery has been disconnected wait 30 seconds for the internal capacitors to
+discharge before handling the controller.
+
+
+
+
+Never connect the controller to a battery with vent caps removed as an arc may occur
+due to the controller's internal capacitance when it is first connected.
+
+
+
+
+As blow-out magnets are fitted to contactors (except 24V) ensure that no magnetic particles
+can accumulate in the contact gaps and cause malfunction. Ensure that contactors are wired
+with the correct polarity to their power terminals as indicated by the + sign on the top
+molding.
+
+
+
+
+Do not attempt to open the controller as there are no serviceable components. Opening the
+controller will invalidate the warranty.
+
+
+
+
+Use cables of the appropriate rating and fuse them according to the applicable national
+vehicle and electrical codes.
+
+
+
+
+                                                                                 Doc. # 177/52701
+2-10                                                                                         Rev2
+                                                                       About the Gen4
+
+
+Where appropriate use of a suitable line contactor should be considered.
+
+
+
+
+Electric vehicles are subject to national and international standards of construction and
+operation which must be observed. It is the responsibility of the vehicle manufacturer to
+identify the correct standards and ensure that their vehicle meets these standards. As a major
+electrical control component the role of the Gen4 motor controller should be carefully
+considered and relevant safety precautions taken. The Gen4 has several features which can
+be configured to help the system integrator to meet vehicle safety standards. Sevcon accepts
+no responsibility for incorrect application of their products.
+
+
+
+
+Doc. # 177/52701
+Rev. 2                                                                                      2-11
+Fault detection and handling
+There are five categories of faults as described in Table 1. For a detailed list of faults see
+„Fault identification‟ on page 6.
+
+Fault severity       Controller latched off     Consequences
+                     until
+Return to base       Cleared by Sevcon          Immediate shut down of the system with the exception
+(RTB)                personnel                  of the power steering if needed. Power is removed to
+                                                nearly all external components.
+Very severe (VS)     Cleared by authorized      Immediate shut down of the system with the exception
+                     service personnel          of the power steering if needed. Power is removed to
+                                                nearly all external components.
+Severe (S)           Keyswitch recycled         Immediate shut down of the system with the exception
+                     (turned off then on)       of the power steering if needed. Power is removed to
+                                                nearly all external components.
+Drive-inhibit (DI)   User deselects all drive   Neutral brakes or coasts the traction motor(s) to a stop.
+                     switches before            The fault prevents the operator initiating drive, but
+                     reselecting                does not inhibit braking function, in particular,
+                                                controlled roll-off braking.
+Information (I)      Not latched                Information faults do not require immediate action,
+                                                although some cutback of power or speed may occur.
+
+Table 1 Fault categories
+
+
+
+
+                                                                                           Doc. # 177/52701
+2-12                                                                                                   Rev2
+ Chapter 3:
+Installation
+Mounting Gen4
+Orientation
+The controller can be mounted in any orientation.
+
+Clearance for LED access
+If you want an operator of your vehicle to be able to view the onboard LED, it is advisable to
+consider the line of sight to the LED at this time.
+
+Mounting hole pattern
+
+
+
+
+Flatness of mounting surfaces: 0.2mm
+
+
+
+
+                                                                                 Doc. # 177/52701
+3-2                                                                                          Rev2
+                                                                            Installation
+
+
+Failure to comply with this flatness specification can cause deformation of the frame and
+damage to the product.
+
+Equipment required:
+    4 x M6 socket cap head bolts, nuts and spring washers. Bolts need to be long enough to
+     pass through 12 mm of Gen4 baseplate and your mounting surface thickness.
+
+    T hand-socket wrench or Allen key
+
+    Thermal grease
+
+Recommended torque setting: 10 Nm ± 2 Nm
+
+Spread a layer of thermal grease, such as Dow Corning 340, on the Gen4 base plate before
+bolting to your mounting surface. Apply the grease at the minimum thickness sufficient to fill
+in the gaps due to non-flatness and follow the manufacturer's documentation.
+
+
+
+Cooling requirements
+To ensure you get the maximum performance from your Gen4 controller:
+
+    Keep it away from other heat generating devices on the vehicle
+
+    Maintain its ambient operating temperature below the specified maximum (see
+     „Operating environment‟ on page 4-6)
+
+
+
+To obtain maximum performance it is important to keep Gen4‟s base plate within the
+operating temperature range. To do this, mount Gen4 to a surface capable of conducting
+away the waste heat. A plate approximately 420 mm x 270 mm x 9.5 mm (thermal resistance
+0.30°C/W) will give thermal performance as shown in Figure 9 on page 4-3.
+
+Cooling performance is affected by mounting surface flatness and the thermal transfer
+between mounting surface and Gen4. Ensure you apply thermal grease and your mounting
+surface meets the flatness figures as described in the „Mounting‟ section above.
+
+
+
+
+Doc. # 177/52701
+Rev. 2                                                                                      3-3
+EMC guidelines
+The following guidelines are intended to help vehicle manufacturers to meet the
+requirements of the EC directive 89/336/EEC for Electromagnetic Compatibility. Any high
+speed switch is capable of generating harmonics at frequencies that are many multiples of its
+basic operating frequency. It is the objective of a good installation to contain or absorb the
+resultant emissions. All wiring is capable of acting as a receiving or transmitting antenna.
+Arrange wiring to take maximum advantage of the structural metal work inherent in most
+vehicles. Link vehicle metalwork with conductive braids.
+
+Power cables
+Route all cable within the vehicle framework and keep as low in the structure as is practical -
+a cable run within a main chassis member is better screened from the environment than one
+routed through or adjacent to an overhead guard. Keep cables short to minimize emitting
+and receiving surfaces. Shielding by the structure may not always be sufficient - cables run
+through metal shrouds may be required to contain emissions.
+
+Parallel runs of cables in common circuits can serve to cancel emissions - the battery positive
+and negative cables following similar paths is an example. Tie all cables into a fixed layout
+and do not deviate from the approved layout in production vehicles. A re-routed battery
+cable could negate any approvals obtained.
+
+Signal cables
+Keep all wiring harnesses short and route wiring close to vehicle metalwork. Keep all signal
+wires clear of power cables and consider the use of screened cable. Keep control wiring clear
+of power cables when it carries analogue information - for example, accelerator wiring. Tie all
+wiring securely and ensure it always follows the same layout.
+
+Controller
+Thermal and EMC requirements tend to be in opposition. Additional insulation between the
+controller assembly and the vehicle frame work reduces capacitive coupling and hence
+emissions but tends to reduce thermal ratings. Establish a working balance by experiment.
+Document the complete installation, in detail, and faithfully reproduce on it all production
+vehicles. Before making changes, consider the effect on EMC compliance. A simple cost
+reduction change could have a significant negative effect on the EMC compliance of a
+vehicle.
+
+
+
+
+                                                                                   Doc. # 177/52701
+3-4                                                                                            Rev2
+                                                                             Installation
+
+
+
+Connecting power cables
+See also „EMC guidelines‟ on page 3-4.
+
+
+
+
+Battery and motor connections
+Cables carrying high AC currents are subject to alternating forces and may require support in
+the cable harness to avoid long-term fatigue.
+
+Equipment required:
+
+    Cables sized to suit the controller and application (see table below)
+
+    M8 crimp ring lugs
+
+    Crimp tool
+
+    M8 wrench
+
+Torque setting: 11 Nm ± 2 Nm
+
+Consider cable routing before making connections.
+
+    Keep cable runs short
+
+    Minimize current loops by keeping positive and negative cables as close together as
+     possible.
+
+    Route cables away from the LED if you intend to make this visible under normal
+     operating conditions.
+
+Connect your power cables using the bolts supplied. They are sized to clamp one ring lug
+thickness. Use a longer bolt if you are fastening more than one ring lug. You need thread
+engagement of at least 10 mm and the maximum penetration is 15 mm.
+
+
+
+
+If you use a bolt which is too long, damage to the terminal and overheating of the
+connection may occur. If you use a bolt which is too short and there isn‟t enough thread
+engagement you may damage the threads.
+
+
+
+
+Doc. # 177/52701
+Rev. 2                                                                                      3-5
+Cable sizes
+When deciding on power cable diameter, consideration must be given to cable length and
+temperature rating of the chosen cable.
+
+
+
+
+Gen4 average (rms)       Cable sizes
+current
+                         metric        US
+                                  2
+150 A                    35 mm         1 AWG
+
+250 A                    50 mm2        1/0 AWG
+
+
+
+
+                                                                            Doc. # 177/52701
+3-6                                                                                     Rev2
+                                                                           Installation
+
+
+
+
+On-board fuse mounting
+You can mount your main input protection fuse directly onto the controller body as shown in
+Figure 6. Select the appropriate fuse from the table below. Connect the battery positive cable
+to the B+ terminal. The B+ terminal is a dummy terminal only and has no internal
+connection.
+
+
+
+
+Figure 5 On-board fuse mounting – size 4 models
+
+
+
+
+Doc. # 177/52701
+Rev. 2                                                                                    3-7
+Figure 6 On-board fuse mounting – size 6 models
+
+Fuse rating and selection
+On-board fuse dimensions are in accordance with DIN43560/1
+
+Gen4 input voltage   Gen4 peak output current     Fuse rating   Sevcon part number
+24V/36 V             450 A                        425 A         858/81990
+                     650 A                        750 A         858/33021
+36V/48 V             450 A                        425 A         858/81990
+                     650 A                        750 A         858/33021
+72V/80 V             350 A                        355 A         858/32045
+                     550 A                        500 A         858/32043
+
+
+
+
+                                                                                     Doc. # 177/52701
+3-8                                                                                              Rev2
+                                                                               Installation
+
+
+Signal wiring
+Assemble your wiring harness using wire of the sizes recommended below and the Sevcon
+loose connector kit (P/N 661/27091). The use of twisted pair and/or screened cables is
+recommended for the speed sensor and CANbus wiring.
+
+To make a connection, gently push the connector housing onto the appropriate mating half
+on the Gen4. Never force a connector. Connectors are keyed to prevent incorrect insertion.
+
+Shielded or twisted wire is recommended. Keep signals away from power cables to avoid
+interference. See also „EMC guidelines‟ on page 3-4.
+
+
+
+Signal wire sizes
+Use wire between 0.5 mm² (20 AWG) and 1.5 mm² (16 AWG) for all signal wiring. Single
+twisted pair cable is readily available in 0.5 mm² (20 AWG).
+
+
+
+CANbus termination
+See also „EMC guidelines‟ on page 3-4.
+
+If your system has more than one CAN node, connect the nodes in a „daisy chain‟
+arrangement (Figure 7) and terminate the connections of the two end nodes with a 120 
+resistor. If the end node is a Gen4, link pins 2 and 24 on the customer connector, a 120 
+resistor is built into the controller. If you have a single node system the termination resistor
+should be connected so that the bus operates correctly when configuration tools are used.
+
+                                    CANbus                                         120 Ω
+       link
+
+
+    Pin 24   Pin 2
+                                                                              Other CAN node
+                     Gen4                         Gen4
+
+
+
+
+Figure 7 CAN node termination
+
+
+
+
+Doc. # 177/52701
+Rev. 2                                                                                        3-9
+Signal connections
+Signal connections are made to Gen4 via a 35 way AMPSeal connector.
+
+
+
+    1                                      12
+      13                                 23
+    24                                     35
+
+
+
+Figure 8 Customer Connector
+
+Pins are protected against short-circuits to the battery positive or negative terminals.
+
+
+
+Pin        Name          Type    What to connect               Maximum            Comment
+                                                               rating
+1          Key switch    Power   From „dead‟ side of key       7A                 This input supplies power from
+           in                    switch via suitable fuse      (Total of all      the battery for all the logic
+                                                               contactor          circuits.
+                                                               output             The unit cannot operate
+                                                               currents plus      without “Key switch in”
+                                                               1.0A)              supply.
+                                                                                  Pins 1, 6 and 10 are connected
+                                                                                  together internally and can be
+                                                                                  used individually or in parallel.
+2          CAN           Comms   To terminate a Gen4 CAN node link pin 2          Make the connection only if the
+           termination           to pin 24. This connects a 120Ω termination      Gen4 is physically at the end of
+                                 resistor, mounted inside the controller,         the CANbus network (see
+                                 across the CANbus.                               „CANbus termination‟ on
+                                                                                  page x-y.
+3          Contactor     Out     To the switched low side      2.0A per           This output provides low side
+           out 1                 of contactor or valve coil.   output, subject    voltage or current control to the
+                                 Contactor out 1 usually       to a limit of      load depending on
+                                 drives the line contactor.    6A for the         configuration.
+                                                               total of all the   The output goes low or is
+                                                               outputs.           chopped to activate the load. It
+                                                               V = Vb             goes high (to Vb) to de-activate
+                                                                                  the load.
+4          Output 1      Power   To one end (high side) of     2A                 This output feeds power to the
+           Supply +              a contactor to be                                contactors. The output is at
+                                 controlled by Contactor                          battery voltage.
+                                 out 1
+
+
+
+
+                                                                                             Doc. # 177/52701
+3-10                                                                                                     Rev2
+                                                                                   Installation
+
+
+Pin    Name         Type      What to connect               Maximum            Comment
+                                                            rating
+5      Encoder      Digital   Position encoder              10V                Use this in conjunction with
+       “U”          pulse                                                      “V” and “W” for PMAC
+                                                                               motors.
+6      Key-switch   Power     From „dead‟ side of key       7A                 This input supplies power from
+       in                     switch via suitable fuse      (Total of all      the battery for all the logic
+                                                            contactor          circuits.
+                                                            output             The unit cannot operate
+                                                            currents plus      without “Key switch in”
+                                                            1.0A)              supply.
+                                                                               Pins 1, 6 and 10 are connected
+                                                                               together internally and can be
+                                                                               used individually or in parallel.
+7      Contactor    Out       To the switched low side      2.0A per           This output provides low side
+       out 2                  of contactor or valve coil.   output, subject    voltage or current control to the
+                                                            to a limit of      load depending on
+                                                            6A for the         configuration.
+                                                            total of all the   The output goes low or is
+                                                            outputs.           chopped to activate the load. It
+                                                            V = Vb             goes high (to Vb) to de-activate
+                                                                               the load.
+8      Output 2     Power     To one end (high side) of     2A                 This output feeds power to the
+       Supply +               a contactor to be                                contactors. The output is at
+                              controlled by Contactor                          battery voltage.
+                              out 2
+9      Digital      Digital   From digital switch           Type B             See note to Table 3
+       Input 6                input 6.                      V = Vb
+                                                            See Table 3
+10     Key switch   Power     From „dead‟ side of key       7A                 This input supplies power from
+       in                     switch via suitable fuse      (Total of all      the battery for all the logic
+                                                            contactor          circuits.
+                                                            output             The unit cannot operate
+                                                            currents plus      without “Key switch in”
+                                                            1.0A)              supply.
+                                                                               Pins 1, 6 and 10 are connected
+                                                                               together internally and can be
+                                                                               used individually or in parallel.
+11     Contactor    Out       To the switched low side      2.0A per           This output provides low side
+       out 3                  of contactor or valve coil.   output, subject    voltage or current control to the
+                                                            to a limit of      load depending on
+                                                            6A for the         configuration.
+                                                            total of all the   The output goes low or is
+                                                            outputs.           chopped to activate the load. It
+                                                            V = Vb             goes high (to Vb) to de-activate
+                                                                               the load.
+
+
+
+
+Doc. # 177/52701
+Rev. 2                                                                                               3-11
+Pin    Name        Type      What to connect               Maximum          Comment
+                                                           rating
+12     Output 3    Power     To one end (high side) of     2A               This output feeds power to the
+       Supply +              a contactor to be                              contactors. The output is at
+                             controlled by Contactor                        battery voltage.
+                             out 3
+13     CAN High    Comms     CANbus High signal            V=5V             Maximum bus speed 1
+                                                                            Mbits/sec
+                                                                            Alternative connection to pin
+                                                                            16
+14     Encoder A   Digital   From the speed encoder A      I = 25 mA        Check the speed encoder
+       Input       pulse     channel                       (internally      signals have the correct number
+                                                           limited)         of pulses per revolution.
+                                                           V = 8 V (for     Check Gen4 is configured for
+                                                           current-source   the type of encoder you are
+                                                           encoders)        using (open-collector or
+                                                           V = 2.5V or      current-source)
+                                                           5V (for open-
+                                                           collector
+                                                           encoders)
+15     Encoder     Power     To the negative supply        I = 100 mA       We recommend the use of
+       power                 input (0 V) of the speed      V = 0.5 V        screened cable for the encoder
+       supply -              encoder                                        wiring. Connect the screen to
+                                                                            this pin only along with the
+                                                                            negative supply.
+16     CAN High    Comms     CANbus High signal            V=5V             Maximum bus speed 1 Mbits/s.
+                                                                            Alternative connection to pin
+                                                                            13
+17     Encoder     Digital   Position encoder              10V              Use this in conjunction with
+       “V”         pulse                                                    “U” and “W” for PMAC
+                                                                            motors.
+18     Digital     Digital   From digital switch           Type A           See note to Table 3
+       Input 1               input 1.                      V = Vb
+                             In a basic configuration      See Table 3
+                             this is usually the forward
+                             switch.
+19     Digital     Digital   From digital switch           Type A           See note to Table 3
+       Input 3               input 3.                      V = Vb
+                             In a basic configuration      See Table 3
+                             this is usually the foot
+                             switch (FS1).
+20     Digital     Digital   From digital switch           Type B           See note to Table 3
+       Input 5               input 5.                      V = Vb
+                                                           See Table 3
+
+
+
+
+                                                                                      Doc. # 177/52701
+3-12                                                                                              Rev2
+                                                                               Installation
+
+
+Pin    Name        Type      What to connect              Maximum          Comment
+                                                          rating
+21     Digital     Digital   From digital switch          Type B           See note to Table 3
+       Input 8               input 8.                     V = Vb
+                                                          See Table 3
+22     Pot. 1      Analog    From potentiometer 1         V = 10 V         Suitable for potentiometers in
+       wiper in              wiper.                       Zin = 82 kΩ      the range 500 Ω to 10 kΩ
+                                                          (24V/36V and     or
+                                                          36V/48V
+                                                                           Voltage-output device (e.g.
+                                                          models)
+                                                                           Sevcon linear accelerator)
+                                                          Zin = 100 kΩ     0 to 5 V or 0 to 10 V.
+                                                          (24V/36V and
+                                                          36V/48V
+                                                          models)
+
+
+23     Pot. 2      Analog    From potentiometer 2         V = 10 V
+       wiper in              wiper.                       Zin = 82 kΩ
+                                                          (24V/36V and
+                                                          36V/48V
+                                                          models)
+                                                          Zin = 100 kΩ
+                                                          (24V/36V and
+                                                          36V/48V
+                                                          models)
+
+
+24     CAN Low     Comms     CANbus Low signal            V=5V             Maximum bus speed 1 Mbits/s.
+                                                                           Alternative connection to pin
+                                                                           27
+25     Encoder B   Digital   From the speed encoder B     I = 25 mA
+       Input       pulse     channel                      (internally
+                                                          limited)
+                                                          V = 8 V (for
+                                                          current-source
+                                                          encoders)
+                                                          V = 2.5V or
+                                                          5V (for open-
+                                                          collector
+                                                          encoders)
+26     Encoder     Power     To the positive supply       I = 100 mA       Check the speed encoder you
+       power                 input of the speed encoder   V = 5V or        use is compatible with Gen4.
+       supply +                                           10V software     See page 6-14 for configuration
+                                                          selectable       details.
+27     CAN Low     Comms     CANbus Low signal            V=5V             Maximum bus speed 1 Mbits/s.
+                                                                           Alternative connection to pin
+                                                                           24
+
+
+
+
+Doc. # 177/52701
+Rev. 2                                                                                           3-13
+Pin    Name         Type        What to connect               Maximum          Comment
+                                                              rating
+28     CAN          Power       To CAN device requiring       V = 24 V         Check that the CAN device
+       power                    external supply               I = 100 mA       power supply requirement is
+       supply +                                                                suitable for Gen4.
+29     Encoder      Digital     Position encoder              10V              Use this in conjunction with
+       “W”          pulse                                                      “U” and “V” for PMAC
+                                                                               motors.
+30     Digital      Digital     From digital switch           Type A           See note to Table 3
+       Input 2                  input 2.                      V = Vb
+                                In a basic configuration      See Table 3
+                                this is usually the reverse
+                                switch.
+31     Digital      Digital     From digital switch           Type A           See note to Table 3
+       Input 4                  input 4.                      V = Vb
+                                In a basic configuration      See Table 3
+                                this is usually the seat
+                                switch.
+32     Digital      Digital     From digital switch           Type B           See note to Table 3
+       Input 7                  input 7.                      V = Vb
+                                                              See Table 3
+33     Motor        Analog      From a thermistor device      V=5V             A NTC thermistor having a
+       thermistor               mounted inside the motor      (via 2.2 kΩ      resistance of approximately
+       in                                                     internal pull-   2.2 kΩ at 100°C will give best
+                                                              up resistor)     sensitivity.
+                                                                               Connect the other lead of the
+                                                                               thermistor to the B- terminal of
+                                                                               the Gen4 controller.
+                                                                               Can also be used as an
+                                                                               additional analog input
+34     Pot. 1       Power       Supply feed to                V = 10 V         Suitable for potentiometers in
+       power                    potentiometer 1. In a basic   I = 15 mA        the range 500 Ω to 10 kΩ
+       supply +                 configuration this is the
+                                throttle.
+35     Pot. 2       Power       Supply feed to                V = 10 V         Suitable for potentiometers in
+       power                    potentiometer 2.              I = 15 mA        the range 500 Ω to 10 kΩ
+       supply +
+
+Table 2 Connector A pin out and wiring information
+
+
+
+
+                                                                                         Doc. # 177/52701
+3-14                                                                                                 Rev2
+                                                                                 Installation
+
+
+  Controller       Digital     Impedance to B+      Impedance to B-
+   voltage         Input
+                    Type
+   24V/36V           A                 9k                   9k
+                     B                13k                   9k
+   36V/48V           A                16k                  16k
+                     B                24k                  16k
+   72V/80V           A                44k                  44k
+                     B                66k                  44k
+
+Table 3: Impedance at Digital Input Pins
+
+Note to Table 3:
+
+Configure the digital input switches as active-high (switched to Vb) or active-low (switched to
+battery negative).
+
+Configuration applies to all digital input switches (1 to 8) i.e. they are all active-high or all
+active-low.
+
+When a switch is open the digital input pin sits at 0.5 x Vb. The input sinks current in active-
+high configurations and sources current in active-low configurations.
+
+Wire-off protection is possible by combining a type A digital input with a type B digital
+input.
+
+
+
+
+Doc. # 177/52701
+Rev. 2                                                                                          3-15
+ Chapter 4:
+Specification
+Electrical
+Input voltage
+                      24/36V controllers     36/48V controllers          72/80V controllers
+Working voltage       12.7V to 52.2V         25.9 V to 69.6 V            43.5 V to 116 V
+limits:
+Non-operational       59.4V                  79.2 V                      132 V
+overvoltage
+limits:
+Battery voltage       Vnom to 0.5 x Vnom for 100 ms
+droop:                Vnom to 0 V for 50 ms
+
+Input protection:     Input protected against reverse connection of battery
+
+Output protection
+Output current:           Reduced automatically from peak to continuous rating depending
+                          on the time a peak load is applied to the controller (see Figure 9 on
+                          page4-3).
+                          Reduced automatically if operated outside normal temperature
+                          range.
+Short-circuit:            Protected against any motor phase to B- or B+ at power-up.
+                          Protected against any motor phase to another motor phase at any
+                          time during operation.
+                          At switch-on Gen4 detects valid output loads are present before
+                          applying drive current.
+
+
+
+
+                 Repetitive short circuits may damage the controller.
+
+
+
+
+                                                                                                  Doc. # 177/52701
+4-2                                                                                                           Rev2
+                                                                                     Specification
+
+
+Output ratings
+Input        Function                       Short term           Continuous
+(Vdc)                                       rating* (A rms)      current (A rms)
+24/36        Single traction                450                  180
+             Single traction                650                  260
+36/48        Single traction                450                  180
+             Single traction                650                  260
+72/80        Single traction                350                  140
+             Single traction                550                  220
+
+
+               *2 minute rating (lower ratings are possible for longer periods; see example in Figure 9)
+
+
+
+
+               Figure 9 Output reduction over time with sustained peak demand
+
+
+
+
+Doc. # 177/52701
+Rev. 2                                                                                                     4-3
+CAN interface
+CAN protocol:              CANopen profiles DS301, DS401 and DS402 are supported.
+                           Physical layer uses ISO11898-2.
+Baud rates supported:      1 Mbits/s (default), 500 kbits/s, 250 kbits/s, 125 kbits/s, 100
+                           kbits/s, 50 kbits/s, 20 kbits/s and 10 kbits/s.
+
+Control inputs and outputs
+Digital inputs:            8 digital switch inputs (software configurable polarity).
+                           Can be wire-off protected.
+                           Active low inputs < 1.8 V: active high inputs > Vb - 1.8 V
+Analog inputs:             2 general purpose inputs which can be used for 2-wire
+                           potentiometers (software configurable). They can also be
+                           configured as digital inputs.
+                           Motor thermistor input
+Potentiometer inputs:      Two 3-wire protected inputs (software configurable).
+Inductive drive outputs:   3 configurable PWM outputs. Use in voltage or current control
+                           mode.
+                           Voltage-controlled:
+                           Continuous sink current = 2A
+                           Peak current limited to < 2.5A
+                           Open-circuit detection (Iout < 0.1 A) is a configurable option
+                           Voltage-controlled (PWM) mode allows contactors with a rating
+                           less than Vnom to be used (range 24 V to Vnom).
+                           Current-controlled:
+                           Current output configurable between 0 and 2A
+
+Isolation
+Any terminal to the        Withstands 2 kV d.c.
+case:                      Meets EN1175-1:1998 and ISO3691
+                           Complies with IEC-60664
+
+
+
+
+                                                                                             Doc. # 177/52701
+4-4                                                                                                      Rev2
+                                                                                       Specification
+
+
+EMC
+Radiated emissions:          EN12895 (Industrial Trucks – Electromagnetic Compatibility)
+                             EN 55022:1998, 6, class B
+                             EN 12895:2000, 4.1 Emissions. When part of a system with a
+                             motor operating,
+                             FCC Part 15, Radiated Emissions. Meets the standards given in
+                             FCC Part 15, Section 15.109:
+Conducted emissions:         No mains port, therefore not required
+Susceptibility:              Performance level A (no degradation of performance) or level B
+                             (degradation of performance which is self-recoverable) subject to
+                             the additional requirement that the disturbances produced do not:
+                                affect the driver‟s direct control of the truck
+                                affect the performance of safety related parts of the truck or
+                                 system
+                                produce any incorrect signal that may cause the driver to
+                                 perform hazardous operations
+                                cause speed changes outside limits specified in the standard
+                                cause a change of operating state
+                                cause a change of stored data
+Radiated RF field:           EN 61000-4-3, 5.1 Test Level: user-defined test level of 12 V/m
+                             EN 12895:2000, 4.2 Immunity
+                             EN 61000-4-6, Table 1 - Test Levels
+Electrical fast transient:   EN 61000-4-4, Table 1 - Test Levels, Level 2
+                             EN 12895:2000, 4.2 Electrostatic Discharge
+Electrostatic
+                             4 kV contact discharge
+discharge:
+                             8 kV air discharge
+
+
+Electrical surge:            EN 61000-4-5:1995, Table A.1 – Selection of Test Levels, Class
+                             3
+
+Regulatory compliance
+Designed to meet:            EN1175-1:1998 (which covers EN1726 for the controller)
+                             ISO 3691
+                             UL583
+                             ASME/ANSI B56.1:1993
+
+
+
+
+Doc. # 177/52701
+Rev. 2                                                                                            4-5
+Mechanical
+Operating environment
+Operating temperature:   -30°C to +25°C (no current or time derating)
+                         +25°C to +80°C (no current derating, but reduced time at rated
+                         operating point)
+                         +80°C to +90°C and -40°C to -30°C (with derating)
+Non-operation            -40°C to +85°C (can be stored for up to 12 months in this
+temperature:             ambient range)
+Humidity:                95% at 40°C and 3% at 40°C
+Ingress of dust and      IP66 rated
+water:
+
+Shock and vibration
+Thermal shock:           EN60068-2-14, Test Na
+Repetitive shock:        50 g peak 3 orthogonal axes, 3+ and 3– in each axis, 11 ms pulse
+                         width
+Drop test:               BS EN 60068-2-32:1993 Test Ed: Free fall, appendix B, Table 1
+Bump:                    40 g peak, 6 ms, 1000 bumps in each direction repetition rate 1 to
+                         3 Hz.
+Vibration:               3 g, 5 Hz to 500 Hz
+Random vibration:        20 Hz to 500 Hz, acceleration spectral density 0.05 g2/Hz
+                         (equivalent to 4.9 grms)
+
+Weight
+                         Controller weight
+Case size 4:             2.7kg
+Case size 6:             3.8kg
+
+
+
+
+                                                                                              Doc. # 177/52701
+4-6                                                                                                       Rev2
+                   Specification
+
+
+Dimensions
+Size 4 models
+
+
+
+
+Doc. # 177/52701
+Rev. 2                       4-7
+Size 6 models
+
+
+
+
+                Doc. # 177/52701
+4-8                         Rev2
+  Chapter 5:
+System design
+Sizing a motor
+Information required about the application
+To select an appropriate induction motor for an application find or estimate the following
+information:
+
+     Minimum battery voltage
+
+     Maximum motor speed required
+
+     Peak torque required at base speed
+
+     Peak torque required at maximum motor speed
+
+     Continuous (average) motor power output required to perform the work cycle
+
+     Peak motor power output required and duration
+
+Include inertia and friction contributed by the motor, as well as any gearing in the drive
+chain, when calculating torque and load requirements. If replacing a DC motor with an AC
+motor in an existing application, the DC motor torque vs. speed curve is a good starting
+point to determine the required ratings.
+
+Motor maximum speed
+Determine the maximum motor speed using the required vehicle or pump maximum speeds
+and the ratio of any gear box or chain between the motor and the load. Most motor
+manufacturer rate induction motors at synchronous speed which is 1,500 and 1,800 rpm for a
+4-pole motor when operated from 50 Hz and 60 Hz line frequencies respectively.
+
+The maximum speed an induction motor can be used at is determined by the limit of the
+mechanical speed, typically 4,000 to 6,000 rpm, and the reduction in useful torque at higher
+speeds. Increasing losses in the iron of the motor at higher speeds may further limit the
+maximum speed. Always check the maximum speed with the motor manufacturer. Check also
+any limitations imposed by the maximum frequency of the encoder input signal (see „Motor
+speed sensor (encoder)‟ on page 5-11).
+
+Torque required between zero and base speed
+Calculate the torque required by the application. Use figures for the work that needs to be
+done against friction and gravity, plus those required to accelerate the load inertia and
+momentum. Up to rated speed the peak torque that can be supplied when using a correctly
+specified Gen4 is equal to the breakdown torque. Select a motor with a breakdown torque
+rating greater than the peak torque required.
+
+
+                                                                                  Doc. # 177/52701
+5-2                                                                                           Rev2
+                                                                                                          System design
+
+Torque required at maximum speed
+Calculate the torque as above. As speed increases beyond base speed the maximum torque
+an induction motor can supply falls as defined by the following two equations:
+
+In the constant power region;
+
+                    Tmax
+T
+                   
+                          
+                    rated  
+In the high speed region;
+
+                    Tmax
+T                               2
+                   
+                        
+                    
+                   rated 
+This is shown in Figure 10. Select a motor with a torque rating greater than the peak torque
+required.
+
+                                               Torque speed curve for a typical induction motor
+                  3.5
+
+                    3
+                                                       constant power region                      high speed region
+                  2.5
+
+
+
+
+   Torque (pu)
+                    2
+
+                  1.5
+
+                    1
+
+                  0.5
+
+                    0
+                        0            0.5   1          1.5         2         2.5         3          3.5        4       4.5
+                                                                   Speed (pu)
+
+                                                       breakdown torque           rated torque
+
+
+Figure 10 Torque speed curve
+
+
+
+
+Doc. # 177/52701
+Rev. 2                                                                                                                      5-3
+Continuous power rating
+The required continuous power rating of the motor is governed by the application load cycle
+over a shift. Use the maximum RMS current over a period of one hour to determine the
+motor rating required. The motor manufacturer will typically specify a 1 hour or continuous
+rating. Select a motor whose ratings are equal to or greater than your calculated load over 1
+hour.
+
+Peak power rating
+The peak power rating required for the application is actually determined by the peak torque
+required, as this determines the motor current required. Motor manufacturers will provide S1,
+S2 or S3 duty cycle ratings for the motors.
+
+
+
+Selecting the Gen4 model
+Matching motor and controller ratings is not an exact exercise and therefore you may need
+to perform iterative calculations. The main considerations when choosing an appropriate
+Gen4 controller are described below.
+
+Current and power ratings considerations
+Consider the following when choosing the appropriate Gen4 controller:
+
+     Ensure the controller chosen matches or exceeds the peak current and average current
+      requirements of the motor(s) in the application.
+
+     Ensure the application can dissipate the waste heat generated by the controller. If the
+      controller gets too hot it reduces its output, limiting vehicle performance.
+
+Power output restrictions at motor and drive operating temperature
+limits
+A controller protects itself by reducing the current and hence torque available when its
+temperature limit is reached (Figure 11).
+
+
+
+
+                                                                                     Doc. # 177/52701
+5-4                                                                                              Rev2
+                                                                                    System design
+
+                                                        Gen4 Cutback Curve
+
+                                   120
+
+
+                                   100
+
+
+
+
+  Current allowed (% of maximum)
+                                   80
+
+
+                                   60
+
+
+                                   40
+
+
+                                   20
+
+
+                                    0
+                                         70   75   80           85             90    95     100
+
+                                                           Base temperature (°C)
+
+
+Figure 11 Current allowed vs. controller base temperature
+
+Circuit configuration
+Once motor size is determined the application circuit configuration can be defined. A basic
+single traction configuration (Figure 12) is provided as a starting point for new designs. Given
+the flexibility of the I/O it is possible to configure a wide range of systems. Refer to „Signal
+connections‟ on page 3-10 to see what each I/O signal is capable of doing as you design
+your system. For pump applications a basic single pump system is shown in Figure 13.
+Error! Reference source not found..
+
+
+
+
+Doc. # 177/52701
+Rev. 2                                                                                            5-5
+Single traction wiring diagram
+
+
+
+
+Figure 12 Single traction wiring diagram
+
+
+
+
+                                           Doc. # 177/52701
+5-6                                                    Rev2
+                                            System design
+
+Single pump wiring diagram
+
+
+
+
+Figure 13 Stand-alone pump wiring diagram
+
+
+
+
+Doc. # 177/52701
+Rev. 2                                                5-7
+Twin motor systems
+A twin motor system may be powered by two Gen4 controllers operating in master–slave
+configuration. In this case the necessary commands are transmitted by the master node to
+the slave node via the CANbus.
+
+Motors may be operated independently in a combined traction-pump application or
+operated in tandem where each motor drives a separate wheel. In this latter case the
+controller (where there are two controllers, the controller configured as master):
+
+     Assists in the steering of a vehicle by adjusting the torque of each motor dependent on
+      the steering angle.
+
+     Reverses the direction of the inner wheel in order to provide a smaller turning circle. The
+      speed of the outer wheel is also limited during a turn.
+
+An example of possible wiring for Gen4 traction controllers operating in master-slave
+configuration is shown in Figure 14.
+
+
+
+Auxiliary components
+Main contactor
+Select the appropriate contactor line contactor from Table 4. A line contactor used at its
+rated coil voltage must be rated „continuous‟. Contactor coil voltage chopping allows the use
+of coils rated „intermittent‟, provided the manufacturer‟s conditions are met.
+
+Gen4 peak output       Coil     Sevcon P/N   Manufacturer         Notes
+current
+Up to 450 A            24 V     828/37024    Albright SW200-29    See paragraph below
+                       48 V     828/57026    Albright SW200-20
+                       80 V     828/67010    Albright SW200-460
+Up to 650 A            24 V     828/39001    Albright SW200       Chop at 17 V (intermittent coil)
+
+Table 4 Main contactor rating
+
+The controller can drive any contactor with coil voltages from 12 V to Vb. It is worth
+considering the use of 24 V contactors with the contactor drive output set to voltage-control
+mode. This allows you to use one type of contactor for any battery voltage (24 V to 80 V).
+Pull-in voltage, pull-in time and hold-in voltage values are all configurable.
+
+
+
+
+                                                                                      Doc. # 177/52701
+5-8                                                                                               Rev2
+                                                                   System design
+
+35 Way AMPSeal Connector Kit
+Kit consists of Gen4 mating 35 way AMPSeal connector and pins, Sevcon p/n 661/27901
+
+
+
+
+Emergency stop switch
+Refer to the appropriate truck standards.
+
+On-board fuse
+See „On-board fuse mounting‟ on page 3-7.
+
+
+
+
+Doc. # 177/52701
+Rev. 2                                                                                5-9
+Figure 14 Dual traction wiring diagram
+
+
+                                         Doc. # 177/52701
+5-10                                                 Rev2
+                                                                             System design
+
+Key switch fuse F2
+Use a fuse rated for the larger of: A) the sum of the drive currents plus 1A for internal
+circuits, and B) the capacitor pre-charge circuit. In the following example there are two
+contactors each drawing 2 A:
+
+      Device                  Current
+      Line contactor            2A
+A     Pump contactor            2A
+      Gen4 control circuits     1A
+B     Pre-charge circuit        7A
+
+
+Fuse choice: 7A.
+
+Motor speed sensor (encoder)
+A 4-wire connection is provided for open-collector or current-source encoder devices
+(software configurable). You can use the following types of encoder, or equivalents:
+
+Type                   Output             Supply         Specification
+Bearing Type           Open collector     5 to 24 V DC   64 and 80 pulses per revolution
+(SKF and FAG)                                            Dual quadrature outputs
+                                                         Output low = 0 V (nominal)
+HED Type               Constant current   10 V nominal   80 pulses per revolution
+(Thalheim)                                               Dual quadrature outputs
+                                                         Output low = 7 mA
+                                                         Output high = 14 mA
+
+The number of encoder pulses per revolutions (n) and the maximum motor speed (N) are
+related to, and limited by, the maximum frequency of the encoder signal (fmax). The following
+table shows the maximum motor speed for a given encoder on a 4-pole motor.
+
+Encoder            Maximum motor
+ppr                speed (rpm)
+128                6000
+80                 10000
+64                 10000
+
+For other types of encoder and motor use the formulae:
+
+                 n ( per revolution )  N (rpm)
+ f max ( Hz) 
+                               60
+with fmax limited to 13.3 kHz.
+
+
+
+Doc. # 177/52701
+Rev. 2                                                                                      5-11
+and
+
+                20000 (rpm)
+N max (rpm) 
+                  ( p / 2)
+
+
+
+Motor commutation sensor (U, V, W)
+A 3-wire connection is provided for open-collector phase commutation sensors.
+
+The sensor must provide one cycle per electrical cycle. The signals may be used for angle
+and speed information
+
+
+
+
+                                                                                Doc. # 177/52701
+5-12                                                                                        Rev2
+                                                                           System design
+
+
+Initial power up sequence
+Incorrectly wired or configured vehicles may behave in unexpected ways. At the end of
+the following procedure, only lower the drive wheels to the ground after correct
+operation of the motor and encoder has been confirmed.
+
+Checks prior to power up
+Follow this checklist prior to applying power to your system:
+
+    Jack up the vehicle so that the drive wheels are clear of the ground.
+
+    Confirm all connections are tightened to specified level.
+
+    Ensure all plugs are fully inserted.
+
+    Confirm power wiring connections are made to the correct terminals
+     (B+, B-, +, M1, M2 and M3).
+
+    Ensure the controller is securely mounted (from a mechanical and thermal perspective).
+
+    Ensure there is adequate and correctly ducted airflow for the fan cooled version.
+
+    Check the routing of cables is safe with no risk of short circuit, overheating or cable
+     insulation wear due to rubbing.
+
+Checks after power is applied
+Apply power and do the following:
+
+    Use DriveWizard (see page 6-2) or any configuration tool to complete the configuration
+     process which starts on page 6-7.
+
+    Using the drive controls ensure the wheels rotate in the expected direction. If they do
+     not, check the motor wiring, encoder wiring and encoder configuration (page 6-14).
+
+It should now be safe to lower the vehicle to the ground and test drive. Proceed with
+caution.
+
+
+
+
+Doc. # 177/52701
+Rev. 2                                                                                         5-13
+ Chapter 6:
+Configuration
+Introduction
+This section covers what you need to do to configure Gen4‟s software once you have
+designed and installed your hardware. All of Gen4‟s parameters have a default value and the
+amount of configuration needed is dependent on your particular system.
+
+The main topics are:
+
+     DriveWizard configuration tool: installation and use
+
+     CANopen: an introduction to the protocol and its use in Sevcon products
+
+     An overview of the configuration process outlining what needs to be done and the
+      order in which it must be done
+
+     The configuration steps
+
+
+
+ DriveWizard configuration tool
+DriveWizard (Figure 15) is Sevcon‟s proprietary configuration tool. It allows the user, subject
+to a secure login process, to monitor, configure and duplicate the parameters of any Sevcon
+CANopen node such as the Gen4 controller. DriveWizard can also be used to monitor and
+configure the parameters of any 3rd party CANopen node. The information presented here is
+an overview only. For more information see DriveWizard‟s on-screen help system.
+
+
+
+
+Figure 15 DriveWizard and hardware
+
+
+
+
+                                                                                   Doc. # 177/52701
+6-2                                                                                            Rev2
+                                                                         Configuration
+
+
+DriveWizard functionality with lowest access level
+The lowest access level allows you to review or monitor:
+
+    DCF files on disk
+
+    the contents of the Object Dictionary (applies also to 3rd party nodes)
+
+    the mapping of CANopen PDO communication objects
+
+    system logs
+
+    fault logs
+
+    counters
+
+    operational logs
+
+    real time data (applies also to 3rd party nodes).
+
+You can also change the baud rate and Node ID of a connected node. To write information
+to a Sevcon CANopen node you will need a higher level of access.
+
+Status bars
+User controls are invisible when DriveWizard is busy reading/writing.
+
+User prompts are displayed in the top left of the screen as shown below:
+
+
+
+
+The bottom right area of the status bar shows what DriveWizard is doing if busy and
+sometimes the result of DriveWizard‟s action if this is not clear from the main display area.
+
+
+
+
+The bottom left status bar in the above example shows how many CAN nodes are connected
+and the access level of the person using DriveWizard.
+
+When viewing the Object Dictionary in DriveWizard, parameters are color coded and the key
+is shown in the lower portion of the screen.
+
+Saving, duplicating and restoring a node’s configuration
+You can use DriveWizard to:
+
+
+
+
+Doc. # 177/52701
+Rev. 2                                                                                      6-3
+     Save a node‟s configuration. This can be used at some later date to clone the node‟s
+      configuration.
+
+     Duplicate a node‟s configuration, in real time, to another node on the CANbus.
+
+     Restore a configuration to a node.
+
+Data monitoring
+You can use DriveWizard to monitor data or parameters of a Sevcon or 3 rd party node in real
+time and graph the data.
+
+
+
+CANopen
+This section assumes you have an understanding of CAN and are familiar with its use. If you
+are new to CAN or CANopen please refer to the CiA (CAN in Automation) website, www.can-
+cia.org for further information.
+
+The following information provides an introduction to the important CANopen terminology
+used in this manual and how it relates to the configuration of your Gen4 controller.
+
+CANopen protocol
+CANopen is a CAN higher layer protocol and is defined in the DS301 „Application Layer and
+Communication Profile‟ specification. All CANopen devices must adhere to this standard. To
+provide greater standardization and interoperability with 3rd party devices, Gen4 is designed
+to use the CANopen protocol for communication on its CANbus and meets V4.02 of DS301.
+
+CANopen also supports standardized profiles, which extend the functionality of a device. The
+controller supports the following CANopen standardized profiles:
+
+     DS401 (V2.1) – Device Profile for Generic I/O Modules
+
+     DSP402 (V2.X) – Device Profile for Drives and Motion Control
+
+Communication models
+In any CANopen system, there are three communication models in use. These are Master-
+Slave, Client-Server and Producer-Consumer. The function of each is explained below.
+
+Object Dictionary
+Any device connected to the CANopen network is entirely described by its Object Dictionary.
+The Object Dictionary defines the interface to a device. You setup, configure and monitor
+
+
+
+
+                                                                                 Doc. # 177/52701
+6-4                                                                                          Rev2
+                                                                           Configuration
+
+
+your Gen4 controller by reading and writing values in its Object Dictionary, using a
+configuration tool such as Sevcon‟s DriveWizard (see page 6-2).
+
+There are two important text files associated with the Object Dictionary. These are:
+
+EDS (electronic data sheet)
+An EDS is a text file representation of the Object Dictionary structure only. It contains no
+data values. The EDS is used by configuration software such as Sevcon‟s DriveWizard to
+describe the structure of a node‟s Object Dictionary. An EDS for each Gen4 model and
+software version, is available from Sevcon. The EDS file format is described in the DSP306 –
+Electronic Data Sheet Specification.
+
+Each Object Dictionary matches a particular Gen4 software revision, and its structure is hard
+coded into the controller software.
+
+DCF (Device Configuration File)
+This is a text file similar to an EDS except that it contains data values as well as the Object
+Dictionary structure.
+
+DCFs are used to:
+
+    Download a complete pre-defined configuration to a node‟s Object Dictionary.
+
+    Save the current configuration of a node‟s Object Dictionary for future use.
+
+Communication objects
+These are SDO (service data object) and PDO (process data object) as described below.
+There is a third object, VPDO (virtual PDO), used by Gen4 which is not a CANopen object. It
+is described here because its function is important and similar to that of a PDO.
+
+SDO (Service Data Object)
+SDOs allow access to a single entry in the Object Dictionary, specified by index and sub-
+index. They use the client–server communication model, where the client accesses the data
+and the server owns the target Object Dictionary.
+
+SDOs are typically used for device configuration (e.g. via DriveWizard) or for accessing data
+at a very low rate. They can be used to transmit large amounts of data using one of these
+methods:
+
+PDO (Process Data Object)
+
+
+
+Doc. # 177/52701
+Rev. 2                                                                                         6-5
+PDOs are used by connected nodes (for example in a twin motor configuration) to exchange
+real time data during operation. PDOs allow up to 8 bytes of data to be transmitted in one
+CAN message.
+
+They use the producer-consumer communication model, where one node (the producer)
+creates and transmits the PDO for any connected nodes (consumers) to receive. Transmitted
+PDOs are referred to as TPDOs and received PDOs as referred to as RPDOs.
+
+VPDO (Virtual Process Data Object)
+VPDOs do a similar job as PDOs for data exchange, but internal to a single Sevcon node.
+They are unique to Sevcon and are not part of CANopen.
+
+
+
+
+                                                                               Doc. # 177/52701
+6-6                                                                                        Rev2
+                                                                           Configuration
+
+
+
+Configuration process overview
+Electric vehicles can be dangerous. All testing, fault-finding and adjustment should be
+carried out by competent personnel. The drive wheels should be off the floor and free
+to rotate during the following procedures.
+
+
+
+
+We recommend saving parameter values by creating a DCF, before making any alterations so
+you can refer to, or restore the default values if necessary. Do this using DriveWizard.
+
+This part of the manual assumes you have a vehicle designed and correctly wired up with a
+CANopen network setup. Before you can safely drive your vehicle it is necessary to go
+through the following process in the order presented:
+
+Step    Stage                               Page
+1       Motor characterization              6-8
+2       I/O configuration                   6-10
+3       Vehicle performance configuration   6-19
+4       Vehicle features and functions      6-30
+
+Access authorization
+To prevent unauthorized changes to the controller configuration there are 5 levels of
+accessibility: (1) User, (2) Service Engineer, (3) Dealer, (4) OEM Engineering and (5) Sevcon
+Engineering. The lowest level is (1), allowing read only access, and the highest level is (5)
+allowing authorization to change any parameter.
+
+To login with DriveWizard, select User ID and password when prompted.
+
+To login with other configuration tools write your password and, optionally, a user ID to
+object 5000h sub-indices 2 and 3. The access level can be read back from sub-index 1. The
+password is verified by an encryption algorithm which is a function of the password, user ID
+and password key (5001h).
+
+The password key allows passwords to be made unique for different customers. The user ID
+also allows passwords to be made unique for individuals.
+
+
+
+
+Doc. # 177/52701
+Rev. 2                                                                                          6-7
+How NMT state affects access to parameters
+Some important objects can only be written to when the controller is in the pre-operational
+state. DriveWizard takes Gen4 in and out of this state as required.
+
+If you are not using DriveWizard you may need to request the CANopen network to enter
+pre-operational before all objects can be written to.
+
+To enter pre-operational, write „1‟ to 2800h on the master node.
+
+To restore the CANopen network to operational, write „0‟ to 2800 h.
+
+The controller may refuse to enter pre-operational if part of the system is active: for
+example, if the vehicle is being driven. The request is logged in the EEPROM however, so if
+power is recycled the system won‟t enter operational and remains in pre-operational after
+powering up.
+
+The NMT state can be read at 5110h where 05 = operational and 7F = pre-operational.
+
+
+
+Motor characterization
+Ensure you have completed the CANopen network setup process.
+
+Determining motor parameters
+To provide optimum motor performance Gen4 needs the basic motor information normally
+found on the name plate as well as the following information:
+
+     A value for each of the electrical parameters of the induction motor as shown in Figure
+      16.
+
+     The magnetic saturation characteristics of the motor in the constant power and high
+      speed regions.
+
+     Current and speed control gains.
+
+
+
+
+Figure 16 AC motor single-phase equivalent circuit
+
+To determine these parameters use one of the following methods:
+
+
+                                                                                   Doc. # 177/52701
+6-8                                                                                            Rev2
+                                                                      Configuration
+
+
+1. Ask the motor manufacturer to provide the data and enter it in the Object Dictionary at
+     6410h. Also enter encoder data at 4630h and 6090h and motor maps at 4610h to 4613h.
+
+2. Use the motor name plate data and the self characterization routine provided by Gen4
+     and DriveWizard (described below).
+
+
+
+
+Doc. # 177/52701
+Rev. 2                                                                                  6-9
+Self characterization
+The self characterization function will cause the motor to operate. Ensure the vehicle is
+jacked up, with the driving wheels off the ground and free to turn, before starting the
+test.
+
+The motor self-characterisation process allows a user to determine the electrical parameters
+required for efficient control of AC induction motors using a Gen4 controller connected to a
+PC or laptop running characterisation software. For further information, please contact your
+local Sevcon representative.
+
+
+
+
+I/O configuration
+Ensure you have completed the CANopen network setup and Motor Characterization
+processes described above.
+
+The individual characteristics and mapping of the I/O in your application need to be setup.
+This can be done manually, or one of a selection of predefined setups can be selected.
+Predefines setups exist for many of the common vehicle functions such as standalone
+traction, standalone pump and twin traction.
+
+
+
+
+                                                                                 Doc. # 177/52701
+6-10                                                                                         Rev2
+                                                                        Configuration
+
+
+For manual configuration, it is necessary to use PDOs and VPDOs to map application objects
+on the master node (2000h to 25FFh) to the hardware I/O objects on all other nodes (6000h
+to 6FFFh). Auto configurations will create the required PDO and VPDO mappings depending
+on which pre-defined I/O configuration has been selected, but additional PDO mappings can
+be added if desired.
+
+To configure I/O:
+
+    Either configure PDOs and VPDOs to map application objects on the vehicle master
+     node to hardware I/O objects on other nodes, or select a pre-defined configuration and
+     use auto-configuration to set up PDOs and VPDOs
+
+    Setup each hardware I/O object, including wire-off protection.
+
+Manual object mapping
+To enable the controller to perform the functions required in your system it is necessary to
+map object to object (e.g. a measured input signal mapped to a steer operation).
+
+This is achieved by setting up PDOs (node to node mapping) and VPDOs (internal mapping
+on each controller) as described below.
+
+Apply mapping to Gen4 as follows:
+
+    Standalone controllers: setup VPDOs only
+
+    Networked controllers: setup VPDOs and PDOs
+
+Before starting the mapping process it is a good idea to draw out a map of what you want
+to do. The amount of mapping required depends on the electrical wiring of your vehicle.
+Check to see if the default settings satisfy your needs before making changes.
+
+
+
+
+Doc. # 177/52701
+Rev. 2                                                                                    6-11
+VPDO mapping
+VPDO mapping is defined by objects in the range 3000h to 3FFFh as shown in the table
+below. Use DriveWizard, or any other configuration tool, to access these objects.
+
+Feature                    Object                   Notes
+                           indices
+Motor                           3000h               Used to map the master to the type of local motor
+                                3300h               Used to map digital input signals to application inputs
+Input mapping
+                                3400h               Used to map analog input signals to application inputs
+                                3100h               Used to map application outputs to digital output signals
+Output mapping
+                                3200h               Used to map application outputs to analog output signals
+
+To help understand how to map internal objects an example VPDO mapping is shown in
+Figure 17. A digital switch input is mapped to the seat switch function to control the traction
+application, i.e. with no seat switch input the vehicle is prevented from moving.
+
+   Master
+                  seat
+    traction     switch           2124h
+   application                 (seat switch)
+
+
+                                 3300h
+                             (VPDO mapping)
+
+                                                          VPDO
+                             Object Dictionary
+                                                         manager
+
+
+
+
+                 digital
+        local    inputs           6800h [1]
+         I/O                 (digital inputs 1-8)
+
+
+
+
+Figure 17 Example of a digital input mapped to the seat switch via VPDO
+
+The number of sub-indices of each VPDO object depends on the amount of I/O on the
+device. For example, 3300h has 9 sub-indices on a device with 8 digital inputs. Sub-index 0
+gives the number of I/O channels in use. Sub-indices 1 to 8 correspond to the inputs.
+
+To map the local I/O to an application signal object, set the appropriate VPDO sub-index to
+the application signal object index. If the seat switch shown in the above diagram was
+connected to digital input 4 (bit 3 in 6800h,1), sub-index 4 of 3300h would be set to 2124h.
+
+
+
+                                                                                                          Doc. # 177/52701
+6-12                                                                                                                  Rev2
+                                                                          Configuration
+
+
+Some further examples are:
+
+    Map FS1 to read the value of digital input 8 (connector A, pin 11): at 3300 h sub-index 8
+     enter the value 2123.
+
+    Map the electromechanical brake signal to be applied to analog output 4 (connector C,
+     pin 6): at 3200h sub-index 4 enter the value 2420.
+
+The data flow direction between the application signal objects and the local I/O objects
+depends on whether they are inputs or outputs. For inputs, the flow is from the local I/O to
+application objects, and vice versa for outputs.
+
+Motor VPDOs are slightly different. There are six parameters for each motor, some of which
+flow from application to local I/O (controlword, target torque and target velocity) and some
+of which flow from local I/O to application (statusword, actual torque and actual velocity).
+
+PDO mapping
+The controller supports 9 RPDOs (receive PDOs) and 9 TPDOs (transmit PDOs). Up to 8
+Object Dictionary entries can be mapped to each PDO. Every PDO must have a unique
+identifier (COB-ID).
+
+Setup RPDOs and TPDOs to transmit and receive events between nodes, and map I/O from
+one node to applications in another node.
+
+The easiest way to do this is using DriveWizard. If you are using a 3 rd party configuration
+tool, the relevant Object Dictionary indices are listed in Table 5.
+
+Feature            Object            Notes
+                   indices
+                       1400h-15FFh   RPDO events
+Input mapping
+                       1600h-17FFh   RPDO mapping
+                       1800h-19FFh   TPDO events
+Output mapping
+                       1A00h-1BFFh   TPDO mapping
+
+Table 5 Objects associated with mapping
+
+An example mapping (Figure 18) shows the movement of PDOs in a master-slave
+configuration in which a digital input to the slave has been mapped to the seat switch object
+in the master.
+
+
+
+
+Doc. # 177/52701
+Rev. 2                                                                                     6-13
+   Master                                                                                                              Slave
+
+
+                             1600 - 8h                                              1A00 - 8h
+                          (RPDO mapping)                                         (TPDO mapping)
+
+                  seat
+    traction     switch        2124h
+   application              (seat switch)
+
+
+                                              CANopen                  CANopen
+                                                        PDO   PDO
+                          Object Dictionary                                      Object Dictionary
+
+
+
+
+                                                                                                        digital
+                                                                                      6800h [1]         inputs        local
+                                                                                 (digital inputs 1-8)                  I/O
+
+
+
+
+                     (consumer)                                                           (producer)
+                                                              CANbus
+
+
+Figure 18 Example of a digital input mapped to the seat switch object via PDO and the CANbus
+
+Automatic Configuration Mapping
+The auto-configuration feature allows the user to select their vehicle I/O from a list of pre-
+defined configurations. The principle is identical to the manual process described above, but
+the PDO and VPDO mappings are created by each controller automatically at start up as well
+as CANopen network configuration settings. This feature provides an easy and reliable
+method of setting up both single and multi node systems, providing they match one of a
+selection of pre-defined setups (refer to page 1 for details on the available configurations).
+
+To enable auto configuration on all nodes set 5810h sub-index 1 to 0CFFh (This corresponds
+to “Enabled”/”Both VPDO and PDO” for all IO auto configuration options in Drive Wizard).
+This enables the auto configuration of local and remote (via CANopen) analogue IO, digital
+IO and motor control. This is the default state for automatic configuration.                              It is possible to
+disable individual parts of the configuration to allow for user customization via the methods
+described above.
+
+Digital input, analogue input and analogue output configurations can be selected from the
+predefined tables and their numbers entered into sub-indices 3, 5 and 6. This need only be
+set on the master controller if a multimode system is being configured.
+
+CAN node function and configuration can also be defined via the auto configure feature. For
+each node the following should be specified:
+
+
+                                                                                                                  Doc. # 177/52701
+6-14                                                                                                                          Rev2
+                                                                            Configuration
+
+
+        If it is Master or Slave in the CANBus system
+
+        On the Master node, specify it‟s function, e.g. Traction, right side controller and also
+         which other nodes are present as slaves, e.g. Pump, Power steer.
+
+        On the Slave node, simply specify that it is a slave and which type of slave it is, e.g.
+         Pump.
+
+
+
+
+Figure 19 - DriveWizard screen showing automatic object mapping
+
+Encoder
+It is important that the number of encoder pulses per revolution is entered correctly. If
+this information is not correct, the controller may not be able to brake the motor
+effectively.
+
+To configure the encoder:
+
+3. Enter the resolution pulses/rev at 6090h.
+
+
+Doc. # 177/52701
+Rev. 2                                                                                        6-15
+4. Check the encoder pull up and change to voltage driver if needed at 4630 h. The default
+    setting is current source.
+
+To change the encoder polarity (if required) change the setting at 607E h (reverses the
+forward and reverse speed measurements).
+
+Digital inputs
+The state of the digital inputs can be read at object 6800 h.
+
+Digital inputs are either all active low (switch return to battery negative) or all active high
+(switch return to battery positive). A mixture of active low and active high inputs is not
+possible. The default setting is active low.
+
+To configure digital inputs:
+
+   Set active high/low logic at 4680h.
+
+   Set wire off protection at 4681h. Any two digital inputs can be configured with wire-off
+    protection. See Table 2 Connector A pin out and wiring information on page 3-14 (pins
+    14 and 15) for more details.
+
+   Set digital input polarity at 6802h. This is used to configure normally closed/open
+    switches.
+
+Analog inputs
+The analog input voltages can be read at object 6C01 h. Voltages are 16-bit integer values
+with a resolution of 1/256 V/bit.
+
+Although each input is usually assigned a specific task by default, any of the inputs can be
+configured to accept a variable voltage or a potentiometer. Analog inputs can also be used
+as additional digital inputs.
+
+3-wire inputs
+To setup a 3-wire input:
+
+   Enable wire-off protection if required at 4691h
+
+   If the wiper (connector A, pin 26 or 27) is connected to a voltage source, configure as a
+    2-wire input at 4692h
+
+2-wire inputs
+There is no configuration for 2-wire inputs.
+
+
+
+
+                                                                                      Doc. # 177/52701
+6-16                                                                                              Rev2
+                                                                          Configuration
+
+
+Motor thermistor input
+You can connect a thermistor sensor to the Motor thermistor input or a switch to any digital
+input.
+
+Type               Specification
+PTC Silistor       Philips KTY84 or equivalent
+Switch             Connected to a general purpose digital input
+
+To setup go to object 4620h:
+
+    Configure as none, switch or PTC thermistor
+
+    If you are using a PTC thermistor, set the high and low temperature voltages
+
+    If you are using a switch select the digital input source
+
+Read the measured motor temperature (PTC) or switch operation at object 4600 h.
+
+Analog inputs configured as digital inputs
+Each analog input can also be used as a digital input.
+
+To configure an analog input as a digital input, set the high and low trigger voltages at
+object 4690h.
+
+The digital input status object, 6800h, contains enough bits for the digital and analog inputs.
+The first n bits are the actual digital inputs (where n is the number of digital inputs) and the
+last 5 bits are from the analog inputs.
+
+Analog (contactor) outputs
+There are 3 analog outputs which you may have mapped to one or more contactor functions
+such as: line contactor, pump, power steer, electro-brake, external LED, traction motor
+cooling fan, alarm buzzer and horn.
+
+Configure each of the outputs used in your system:
+
+    Choose voltage control or current control for each analog output at 46A1 h.
+     (At the time of writing, current controlled devices can only be operated from Gen4 by
+     mapping a signal input to the controller from an external 3 rd party node).
+
+    Set the frequency of each output to a fixed value of 16 kHz or any value between 40 Hz
+     and 1 kHz at 46A2h and 46A3h. You can have only one low frequency setting per
+     controller. Low frequencies are normally used with current-controlled outputs.
+
+
+
+
+Doc. # 177/52701
+Rev. 2                                                                                      6-17
+   Set the analog output values at object 6C11h. The value is either a voltage or current
+    depending on whether the output is voltage controlled or current controlled. Values are
+    16-bit integers with a resolution of 1/256 V/bit or A/bit.
+
+Error control
+In a CANopen network, the slave node on which the analog (contactor) outputs reside can
+be different to the master node which calculates the output value. If the CANbus fails, the
+master node is no longer able to control the slave outputs. In this situation, the outputs may
+need to change to a safe value. This is achieved with error control.
+
+To configure error control:
+
+   Set each output at object 6C43h to use its last set value or the value at 6C44 h if the
+    CANbus fails.
+
+   Set values if needed at 6C44h for each output. These values are 32-bit integers, in which
+    the bottom 16-bits are ignored.
+
+
+
+
+                                                                                   Doc. # 177/52701
+6-18                                                                                           Rev2
+                                                                             Configuration
+
+
+
+
+Vehicle performance configuration
+Ensure you have completed the CANopen network setup, Motor Characterization and I/O
+Configuration processes described above.
+
+Safety Interlocks
+FS1
+The FS1 switch is normally part of the throttle assembly. It closes when the throttle is
+pressed. The throttle voltage is ignored until FS1 is closed.
+
+FS1 features are configured at 2914h:
+
+     SRO (static return to off): inhibits drive if FS1 is closed for the SRO delay without any
+      direction (forward or reverse) being selected.
+
+     FS1 recycle: forces the operator to lift their foot off the throttle before allowing drive
+      after a direction change.
+
+Deadman
+The deadman switch operates similar to the FS1 switch, whereby, it inhibits drive until it is
+active. However, the deadman switch applies the electro-mechanical brake immediately on
+deactivation, whereas FS1 waits for the vehicle to stop before applying the brake.
+
+Seat
+The seat switch indicates operator presence on the vehicle. Drive is not allowed if this switch
+is open. If the seat switch opens during drive for a period longer than the seat switch delay,
+a fault is set, disabling drive. To clear a seat fault, close the seat switch, open FS1 and
+deselect the forward/reverse switch.
+
+Set the seat switch delay at object 2902h.
+
+Handbrake
+If mapped to a digital input, the handbrake switch inhibits drive if the vehicle handbrake is
+applied. Controlled roll-off detection is still active when the handbrake is applied in case the
+brake fails.
+
+
+
+
+Doc. # 177/52701
+Rev. 2                                                                                         6-19
+Torque mode/speed mode
+The Gen4 controller provides both torque and speed control modes. Object 2900h is used to
+set which mode to use. The default setting is torque mode.
+
+This setting affects how driver demands are interpreted by the controller. In torque mode,
+the throttle push translates into a torque demand, which is applied to the traction motor. In
+speed mode, the throttle push translates to a speed demand. The controller then calculates
+the torque required to maintain this speed.
+
+The difference between these control methods is most apparent when driving on an incline.
+In torque mode, when the vehicle is driven uphill, the vehicle speed will decrease due to the
+increased load. The operator must apply more throttle demand in order to maintain speed.
+In speed mode, the controller will apply additional torque in order to maintain the operator‟s
+speed demand, without the operator having to increase throttle demand.
+
+Throttle
+The controller can use 2 or 3 wire throttle inputs of the following types:
+
+   Linear potentiometer in the range 470  to 10 k
+
+   Voltage source in the range 0V to 10V: compliant with the standard 0..5 V, 0..10 V or
+    3.5..0 V ranges
+
+To setup throttle inputs see „Analog inputs‟ on page 6-16. The throttle voltage (2220h) must
+be mapped to an analog input.
+
+It is recommended that inputs with wire-off detection are used for the throttle input to
+detect wiring faults. This is especially important if a wire-off sets maximum throttle.
+
+Setup the characteristics of the throttle at 2910 h:
+
+   Enable/disable proportional braking. If enabled, the braking torque during direction
+    braking is proportional to the throttle.
+
+   Enable/disable directional throttle. If configured as a directional throttle, the throttle
+    voltage indicates the direction as well as the speed demand. This removes the need for
+    forward and reverse direction switches.
+
+   Proportional speed limit enable/disable. Only used in torque mode. If enabled, speed
+    limit is proportional to the throttle, otherwise speed limit is fixed at the forward or
+    reverse maximum speed.
+
+
+
+
+                                                                                      Doc. # 177/52701
+6-20                                                                                              Rev2
+                                                                           Configuration
+
+
+    Braking directional throttle enable/disable. Only used in torque mode. If enabled, a
+     directional throttle can be used to demand a drive or braking torque in conjunction with
+     the direction switches.
+
+    Define the throttle voltage input: this is the relationship between the throttle voltage
+     and the throttle value. Separate relationships can be specified for forward and reverse.
+     Each relationship has two points, a start and an end. The points are configured
+     differently for standard and directional throttles as shown in Figure 20 and Figure 21
+     respectively.
+
+
+
+
+     Figure 20 Standard throttle configuration
+
+
+
+
+Doc. # 177/52701
+Rev. 2                                                                                      6-21
+    Figure 21 Directional throttle configuration
+
+   Define the input characteristic: this is a profile to the throttle value and can be linear,
+    curved, crawl or user-defined as shown in Figure 22. The curved and crawl characteristics
+    give greater throttle control at low speeds.
+
+
+
+
+                                                                                     Doc. # 177/52701
+6-22                                                                                             Rev2
+                                                                               Configuration
+
+
+     Figure 22 Input characteristics
+
+The throttle value calculated from the voltage can be read at 2620 h.
+
+Acceleration and braking
+See „Drivability profiles‟ on page 6-25.
+
+Footbrake
+The controller can use a switch or analog voltage as the footbrake input. If a footbrake
+switch is mapped, it applies maximum foot braking when the switch is closed. The footbrake
+switch object (2130h) must be mapped to a digital input.
+
+If the footbrake input is an analog voltage, configure the voltage levels in the same way as
+the throttle. The footbrake voltage (2221 h) must be mapped to an analog input.
+
+Configure the characteristics of the footbrake at 2911 h:
+
+    Drive/foot braking priority. If the throttle and footbrake are pressed at the same time,
+     this setting determines whether the system attempts to drive or brake.
+
+    Minimum speed for braking. Foot braking stops when the vehicle speed drops below
+     this level.
+
+    Footbrake voltage input and Input characteristic. These settings are similar to those for
+     the throttle. Refer to the Throttle section above for more information.
+
+The footbrake value calculated from the voltage can be read at 2621 h.
+
+Steering inputs – twin driving motor systems
+Loss of steering information can make a vehicle operate erratically. We recommend the use
+of steering inputs with wire-off protection.
+
+Twin motor systems, which use the drive motors for turning, require some means of
+determining the angle of the steering wheel.
+
+To do this use one of these options:
+
+    A steering potentiometer to give an analog voltage which is a linear function of the
+     steering angle. The steer potentiometer voltage (2223 h) must be mapped to an analog
+     input.
+
+    Four digital inputs representing „inner left‟, „inner right‟, „outer left‟ and „outer right‟. The
+     inner switches indicate the steering angle where torque to the inner wheel motor is
+
+
+
+Doc. # 177/52701
+Rev. 2                                                                                            6-23
+    removed. The outer switches indicate the steering angle where inner wheel motor
+    changes direction. The outer switches are optional. The steer switches (212B h to 212Eh)
+    must be mapped to digital inputs.
+
+To configure steering inputs go to index 2913h in the Object Dictionary:
+
+   Setup the voltages corresponding to fully left, fully right and straight ahead. Using this
+    information, Gen4 calculates the steering angle based on the voltage from a steering
+    potentiometer.
+
+   Setup the steering map. This map defines the relationship between the inner and outer
+    wheel speeds and the steering angle. Each map has 4 user definable points as shown in
+    Figure 23.
+
+
+
+
+    Figure 23 Graph of speed vs. steering angle
+
+The speed and steering angle are normalized. Speed is normalized to maximum vehicle
+speed and the steering angle to 90º. In object 2913h, 0 to 1 is represented by values in the
+range 0 to 32767.
+
+The calculated steering angle can be read at 2623h. An angle value of -32767 indicates full
+steering to the left, +32767 full steering to the right and 0 is straight ahead.
+
+If steering switches are used instead of a steering potentiometer, only part of the steering
+map is used as shown in Table 6.
+
+
+
+                                                                                   Doc. # 177/52701
+6-24                                                                                           Rev2
+                                                                        Configuration
+
+
+Value                  Description
+2913h,5                Outer wheel speed during inner wheel cutback
+2913h,7                Outer wheel speed during inner wheel reversal
+2913h,13               Inner wheel cutback speed
+2913h,15               Inner wheel reverse speed
+
+Table 6 Objects to set when using steering switches
+
+
+During a turn the inner wheel speed is slowed by power reduction instead of braking to
+prevent the outer wheel motor working against the inner wheel motor.
+
+Drivability profiles
+Drivability profiles allow you to set maximum values for speed, torque, acceleration and
+deceleration for use in a range of operational situations. Figure 24 shows the change in
+speed under various driving conditions over a period of time.
+
+
+
+
+Figure 24 Example acceleration/deceleration parameter settings
+
+In Torque/Speed mode, the acceleration and deceleration rates control the rate of change of
+torque. In Speed Control mode, the acceleration and deceleration rates control the rate of
+change of speed.
+
+
+
+
+Doc. # 177/52701
+Rev. 2                                                                                     6-25
+You can select reverse while driving in the forward direction with your foot still on the
+throttle. In this situation the controller applies braking in the form of a direction change
+deceleration rate down to zero speed. It then applies a direction change acceleration rate to
+increase the vehicle‟s speed in the reverse direction up to the set maximum speed as shown
+above.
+
+Configure the following drivability profiles to suit your application (each containing the same
+set of parameters):
+
+   Traction baseline profile: the default and highest set of values (2920h).
+
+   Drivability select 1 profile: invoked when drivability select 1 switch is active (2921 h) or an
+    alternative trigger is active (see below).
+
+   Drivability select 2 profile: invoked when drivability select 2 switch is active (2922 h) or an
+    alternative trigger is active (see below).
+
+The traction baseline profile contains the default maximum values. All of the remaining
+profiles apply lower, modifying values to the baseline profile. BDI and service profiles, when
+configured, are automatically applied by the software under preset conditions. For example
+you may want to limit the acceleration and maximum speed of a vehicle when the battery
+gets low to maximize the operating time before recharge. The remaining profiles are applied
+by the driver with a switch.
+
+Drivability profiles can also be invoked by alternative internal software signals. Such as BDI
+low, service required or low speed.     These can be selected to suit specific application
+requirements in object 2931h, each of the triggers operates in parallel with the other and the
+drivability select switches.
+
+Where more than one profile is active, the lowest value(s) are used by the software.
+
+Speed in the Object Dictionary is measured in RPM. However, the vehicle gear ratio (2915 h)
+can be used to change this unit to any other preferred unit such as KPH or MPH. A gear
+ratio of 1 is RPM.
+
+Torque is measured in Nm and is converted to a value in 1/1000ths of motor rated torque at
+object 2916h. The converted value is used by the application motor objects (2000h to 20FFh)
+and the DSP402 motor control profile (6000 h to 67FFh).
+
+
+
+
+                                                                                      Doc. # 177/52701
+6-26                                                                                              Rev2
+                                                                           Configuration
+
+
+Controlled roll-off
+Controlled roll-off limits a vehicle to a slow, safe speed if it starts to move without any
+operator input. Primarily, it is to prevent uncontrolled movement if a vehicle‟s brakes fail on
+an incline. Controlled roll-off operates whether the operator is present or not.
+
+Configure the following at object 2930h:
+
+    Enable/disable controlled roll-off
+
+    Set a roll-off maximum speed
+
+    Set a roll-off maximum torque
+
+Alternatively, Gen4 can apply an electromagnetic brake if one is mapped and roll-off is
+detected. Refer to „Electro-mechanical brake‟ on page 6-30 for more information.
+
+Hill hold
+A vehicle on a hill can be held at a standstill for a configurable time when the operator
+selects neutral. At the end of this time or if the seat switch indicates the operator is not
+present, hill hold terminates.
+
+You can set the hill hold delay at object 2901h. Set the hill hold delay to 0 to disable this
+feature.
+
+Inching
+Inching allows an operator to maneuver a vehicle, at low speeds, towards a load. Inching can
+be initiated with one switch. A time-out is used to prevent the vehicle from continuing to
+drive indefinitely if the switch gets stuck or goes short circuit.
+
+To configure inching:
+
+    Ensure forward and reverse inching switches have been mapped to two digital inputs.
+
+    Specify an inching speed (0% to 25% of the full speed of the vehicle) at 2905 h
+     sub-index 1.
+
+    Specify a time-out (0.1 s to 5.0 s) at 2905h sub-index 2.
+
+Drivability select switches
+There are two drivability select switches (2126 h and 2127h).
+
+To enable either of these they must be mapped to digital inputs. When they are active, the
+corresponding drivability profiles (2921h and 2922h) are applied.
+
+
+
+
+Doc. # 177/52701
+Rev. 2                                                                                         6-27
+Economy
+The economy input is an analog input which can be used to increase vehicle efficiency and
+extend battery life. It is normally controlled using a potentiometer mounted on the vehicle‟s
+dashboard. The economy voltage (2222h) must be mapped to an analog input.
+
+Efficiency is improved by reducing the acceleration rate or the maximum torque.
+
+Configure the economy input at object 2912h as follows:
+
+   Economy function: select acceleration or torque.
+
+   Economy voltage input: These settings are similar to those for the throttle
+    (see page 6-20).
+
+The economy value calculated from the voltage can be read at 2622 h.
+
+Pump configuration
+The controller can use a mixture of switch and analog voltages as the pump input. In
+addition, the power steer function can be used as an extra input to the pump if the pump
+motor is required to supply pump and power steering.
+
+General Setup
+Configure the pump features at 2A00h:
+
+   Inhibit pump when BDI drops below cutout level. If already operating when the cutout
+    occurs, the pump will continue to operate until all pump inputs are inactive.
+
+   Drive Enable switch and/or Seat switch input disables pump.
+
+   Ignore Line Contactor state. Allows the pump to operate if it is not connected to the
+    battery through the line contactor. Should be set if the pump also supplies power
+    steering and the power steer is required to operate when the line contactor is open.
+
+   Use Power Steer target velocity as pump input, if pump also supplies power steering.
+
+Set the pump maximum speed, acceleration and deceleration at 2A01h. The pump speed is
+calculated as the value from the inputs multiplied by the maximum speed.
+
+Priority/additive inputs
+Each pump input can be configured as a priority input or an additive input. When calculating
+the pump demand, the controller selects the demand from the highest priority active input,
+and then adds the demand from all the active additive inputs.
+
+Pump throttles
+
+
+                                                                                    Doc. # 177/52701
+6-28                                                                                            Rev2
+                                                                         Configuration
+
+
+There are 2 pump throttle inputs, which can be configured independently. The pump
+throttles allow proportional control of the pump speed.
+
+Configure inputs as priority or additive and set the voltage levels in the same way as the
+traction throttle. The pump throttles must be mapped to analog inputs.
+
+Pump switches
+There are 7 pump switch inputs. Configure each input as priority or additive and assign it a
+value. The pump switches must be mapped to digital inputs.
+
+Power steer configuration
+Power steering can be provided:
+
+    Contactor. Map the power steer contactor drive object to an analog output.
+
+    Dedicated motor controller. Map power steer application motor object to motor control
+     slave.
+
+    Pump motor controller. Configure pump to provide power steering. Power steer demand
+     is added to pump demand.
+
+The power steer can be triggered by a number of events:
+
+    Vehicle moving
+
+    FS1 switch activating
+
+    Direction selected.
+
+    Seat switch activating
+
+    Footbrake activating
+
+Set the power steer motor speed, acceleration and deceleration at 2B01 h. This is not required
+if the power steer motor is operated by a contactor.
+
+
+
+
+Doc. # 177/52701
+Rev. 2                                                                                       6-29
+Vehicle features and functions
+Ensure you have completed the CANopen network setup, Motor Characterization, I/O
+Configuration and Vehicle Performance Configuration processes described above.
+
+Contactors
+Ensure voltage control has been selected (see „Analog (contactor) outputs‟ on
+page 6-17).
+
+To configure any contactor:
+
+   Set pull-in voltage, pull-in time and hold-in voltage at 2D00h
+
+   Enable each output to operate at the pull-in voltage or at the maximum voltage at
+    2D01h
+
+   If required enable each output to reduce to the hold voltage level at 2D02 h
+
+Line contactor dropout
+The line contactor object (2400h) must be mapped to an analog output.
+
+The line contactor is used to isolate controllers and motors from the battery during power
+down or in case of a serious fault. It is normally closed all the time the vehicle is powered,
+but it can be configured to open when the vehicle has been stationary for a period of time.
+
+Configure line contactor dropout at object 2820 h. See also „Contactors‟ above.
+
+The controller has a capacitor pre-charge feature used to protect line contactor tips from
+damage due to in-rush currents when the contactor closes. Writing to 5180 h starts a pre-
+charge cycle. The pre-charge circuit can only supply enough current to charge the capacitors
+of one controller. Where more than one controller is present, the pre-charge circuit on each
+must be used. If an Gen4 is configured as the vehicle master, it controls the pre-charge of all
+slave nodes automatically.
+
+Pre-charge the capacitors once only before closing the line contactor. Repeated pre-charging
+can damage the circuit.
+
+Electro-mechanical brake
+The electro-mechanical brake object (2420h) must be mapped to an analog output.
+
+Set the conditions under which it is applied at 2903 h.
+
+
+
+                                                                                    Doc. # 177/52701
+6-30                                                                                            Rev2
+                                                                           Configuration
+
+
+The brake can be applied when the vehicle stops or when roll-off is detected. If the brake is
+configured to apply when the vehicle stops, it is not applied until the vehicle has been
+stationary for more than the brake delay time.
+
+To prevent vehicle roll away on inclines, the electro-mechanical brake normally does not
+release until the traction motor(s) are producing torque. This feature can be disabled using
+2903h,3.
+
+External LED
+This mirrors the operation of the controller‟s on board diagnostic LED. The external LED
+object 2401h can be mapped to an analog output to drive a lamp on a vehicle dashboard.
+
+Alarm buzzer
+The alarm buzzer object (2402h) must be mapped to an analog output.
+
+Configure the alarm buzzer output, if required, to be activated by one or more of these
+conditions at 2840h:
+
+    forward motion or forward direction selected
+
+    reverse motion or reverse direction selected
+
+    faults other than information faults
+
+    controlled roll-off
+
+A different cadence for each of the above conditions can be configured.
+
+Brake Lights
+A brake light output object is available (2404h) and can be mapped to an analog output. The
+brake lights will illuminate whenever the footbrake is pressed (providing either an analog or
+digital footbrake input is available) or the system is in direction change braking.
+
+Horn
+Ensure a digital input switch is mapped to the horn switch object (2101h) and an analog
+output is mapped to the horn object (2403h).
+
+Service indication
+The controller can reduce vehicle performance and indicate to the operator when a vehicle
+service is required. The interval between services is user-configurable.
+
+Configure the following at object 2850h:
+
+
+
+Doc. # 177/52701
+Rev. 2                                                                                     6-31
+   Service indication: via an analog (contactor) output (e.g. to drive a dashboard lamp)
+    and/or Gen4‟s LED.
+
+   Source hours counter: selects the hours counter and is used to determine when a service
+    is required.
+
+   Service interval: hours between vehicle services. Can be used by the reset function (see
+    below) or for information only.
+
+   Next service due: Servicing is required when the source-hours counter reaches this time.
+    This can be set manually, or automatically using the reset function; see below.
+
+   Reset function: write to the reset sub-index at 2850h to automatically reset the service
+    timer for the next service. The next service due time is calculated as the source hours
+    counter time plus the service interval.
+
+Service profile
+This is a drivability profile where you can set maximum torques, speeds and acceleration
+rates to be applied when a vehicle needs servicing (2925 h). See „Drivability profiles‟ on page
+6-25.
+
+Traction motor cooling fan
+This object can be used to drive a motor cooling fan when the operator is present on the
+vehicle (as indicated by the seat switch). The cooling fan object (2421h) must be mapped to
+an analog output.
+
+Motor over-temperature protection
+The controller protects motors from over-temperature. It maintains a motor temperature
+estimate and can also accept a direct temperature measurement via an analog input (for a
+thermistor) or a digital input (for an over-temperature switch).
+
+The temperature estimate is calculated by monitoring current to the motor over time. The
+estimate is configured at 4621h.
+
+The estimate is always applied, since it can detect increases in motor temperature more
+quickly then the direct measurement. Direct measurement is normally done on the motor
+casing, which lags behind the internal temperature.
+
+Battery protection
+The nominal battery voltage must be set at 2C00h.
+
+Over voltage
+
+                                                                                   Doc. # 177/52701
+6-32                                                                                           Rev2
+                                                                            Configuration
+
+
+Battery over voltage usually occurs during regenerative braking.
+
+To provide protection set values for these parameters at 2C01 h:
+
+    Over voltage start cutback: the value at which the braking effort is linearly reduced to
+     limit voltage increase.
+
+    Over voltage limit: the value at which the controller cutouts out. A fault is set if the
+     voltage exceeds the cutout voltage.
+
+Under voltage
+To prevent excessive battery discharge, set values for these parameters at 2C02 h:
+
+    Under voltage start cutback: the value at which the current drawn from the battery is
+     reduced to limit voltage decrease.
+
+    Under voltage limit: the value at which the controller cutouts out. A fault is set if the
+     voltage drops below the cutout voltage for longer than the protection delay
+
+    Protection delay: the time it takes for the controller to cutout after the under voltage
+     limit has been reached (2C03h).
+
+
+
+
+Doc. # 177/52701
+Rev. 2                                                                                           6-33
+Battery Discharge Indicator (BDI)
+Monitor battery voltage using Gen4‟s Battery Discharge Indicator (BDI). The BDI presents the
+driver with a percentage remaining charge figure and has become an industry standard in
+recent years.
+
+The BDI is not a measure of the absolute battery charge remaining and therefore we
+recommend you regularly check the absolute value in accordance with the battery
+manufacturer‟s instructions.
+
+To use the BDI, configure the following parameters at 2C30 h in the Object Dictionary:
+
+   Cell count: this is the number of battery cells and is normally half the battery voltage, as
+    cells are usually 2 volts each.
+
+   Reset voltage (V): set this to the cell voltage when the batteries have just been charged.
+    This resets the BDI back to 100%.
+
+   Discharge voltage (V): set this to the cell voltage when the battery is discharged.
+
+   Cutout level (%): this is the level at which the vehicle adopts the low battery drivability
+    profile.
+
+Setting the warning and cut-out levels to 0% disables the warning and cut-out functionality.
+
+Read the percentage remaining charge value from 2790 h sub-index 1 in the Object
+Dictionary.
+
+Vehicle hours counters
+All vehicle hours counters have user configurable offsets. This allows vehicle hours counters
+to be maintained if the master controller is replaced.
+
+Apply offsets at 2780h
+
+Vehicle hours counters can be read at 2781h to 2785h.
+
+
+
+
+                                                                                    Doc. # 177/52701
+6-34                                                                                            Rev2
+  Chapter 7:
+Monitoring Gen4
+
+
+
+
+       1
+Reading status variables
+All status variables are in Gen4‟s object dictionary. They can be accessed using SDOs. Some
+can be mapped to PDOs for continuous transmission to remote nodes such as displays and
+logging devices.
+
+Motor measurements
+The following status objects can be read:
+
+   Motor slip frequency, power and temperature at object 4600h.
+
+   Motor torque, speed, etc. at objects 6000h to 67FFh.
+
+Heatsink temperature
+Read the heatsink temperature at object 5100h, sub-index 3.
+
+Identification and version
+Read identification and version information at:
+
+   1008h – Controller name.
+
+   1009h – Hardware version.
+
+   100Ah – Software version.
+
+   1018h – Identity object. Contains CANopen vendor ID, product code, CANopen protocol
+    revision, and controller serial number.
+
+   5500h – NVM (EEPROM) format.
+
+   5501h – Internal ROM checksum.
+
+   5502h – External ROM checksum.
+
+Battery monitoring
+The controller measures actual battery voltage at two points:
+
+   Battery voltage; measured at keyswitch input and read at 5100 h sub-index 1.
+
+   Capacitor voltage; measured at the B+ terminal and read at 5100 h sub-index 2.
+
+The controller also has a battery discharge indicator (BDI), which can be read at 2790 h.
+
+
+
+
+                                                                                   Doc. # 177/52701
+2                                                                                              Rev2
+Hours counters
+The controller supports many different hours counters for various functions. Some counters
+run on all units and some only run on the Gen4 configured as the vehicle master. Hours
+counters which run on all units are:
+
+    Controller key hours: increments while the keyswitch is in the ON position (5200 h).
+
+    Controller pulsing hours: increments when the controller is powering its connected
+     motor (4601h).
+
+Hours counters which run only on the Gen4 configured as the vehicle master are:
+
+    Vehicle key hours: increments as controller key hours (2781 h).
+
+    Vehicle traction hours: increments when the vehicle is driving or braking (2782 h).
+
+    Vehicle pump hours: increments when the pump motor is running (2783h).
+
+    Vehicle power steer hours: increments when the power steer motor is running (2784 h).
+
+    Vehicle work hours: increments when the traction, pump or power steer motors are
+     running (2785h).
+
+Hours counters are preserved with a minimum resolution of 15 seconds when the system is
+powered down.
+
+
+
+Logging
+The controller can log events in the system (along with additional event-related information)
+and minimum and maximum levels of important parameters. You need different levels of
+access to clear the contents of the logs.
+
+Logs are normally reset individually. However, to reset all logs at once write to 4000 h.
+
+FIFO event logs
+Events are recorded by these two separate FIFOs (first in, first out logs), which operate
+identically:
+
+    System: this FIFO is 20 elements deep and is used for events such as software upgrades,
+     user logins and some hardware upgrades (4100h to 4102h).
+
+    Faults: this FIFO is 40 elements deep and is used for detected faults (4110 h to 4112h).
+
+At object 41X0h:
+
+    Reset the FIFO
+
+
+Doc. # 177/52701
+Rev. 2                                                                                          3
+   Read its length
+
+   Apply a configurable filter. The filter allows you to exclude some events from the FIFO
+    event log.
+
+You can access the FIFO using objects 41X1h and 41X2h. The FIFO index is entered at 41X1h
+and the data is read from 41X2h.
+
+Event counters
+The controller provides 10 event counters at 4200 h to 420Ah. Each event counter can record
+information about occurrences of one event. The allocation of event counters to events is
+user-configurable however Gen4 will automatically count important events in unused
+counters. The information recorded in each event counter is:
+
+   The time of the first occurrence
+
+   The time of the most recent occurrence
+
+   The number of occurrences
+
+Operational monitoring
+At objects 4300h and 4301h, Gen4 monitors and records the minimum and maximum values
+of these quantities:
+
+   Battery voltage
+
+   Capacitor voltage
+
+   Motor current
+
+   Motor speed
+
+   Controller temperature
+
+Two instances of the operational monitoring log are maintained. You can access and clear
+the first log; the second is accessible and clearable only by Sevcon engineers. The Customer
+copy is normally recorded and reset each time the vehicle is serviced. The Sevcon copy
+records data over the controller‟s entire working life.
+
+
+
+CANopen abort code
+The controller will sometimes respond with a CANopen General Abort Error (08000000 h)
+when the object dictionary is accessed. This can occur for many reasons. Object 5310h gives
+the exact abort reason. These are:
+
+
+
+                                                                                 Doc. # 177/52701
+4                                                                                            Rev2
+0   None                     7    Cannot go to operational   14   Unable to reset service time
+1   General                  8    Access level too low       15   Cannot reset log
+2   Nothing to transmit      9    Login failed               16   Cannot read log
+3   Invalid service          10   Range underflow            17   Invalid store command
+4   Not in pre-operational   11   Range overflow             18   Bootloader failure
+5   Not in operational       12   Invalid value              19   DSP update failed
+6   Cannot go to             13   EEPROM write failed        20   GIO module error failed
+    pre-operational
+
+
+
+
+Doc. # 177/52701
+Rev. 2                                                                                           5
+Faults and warnings
+Introduction
+In the event of a fault Gen4 takes the following action:
+
+    1. Protects the operator and vehicle where possible (e.g. inhibits drive).
+
+    2. Sends out an EMCY message on the CANbus.
+
+    3. Flashes the LED in a pattern determined by the fault type and severity.
+
+    4. Logs the fault for later retrieval.
+
+Fault identification
+You can identify a fault as follows:
+
+      Check the number of LED flashes and use Table 7 below to determine what action can
+       be taken. A complete and comprehensive fault identification table will be available from
+       Sevcon in due course.
+
+      Pick up the EMCY on the CANbus and read the fault condition using configuration
+       software
+
+      Interrogate the fault on the node directly using DriveWizard or other configuration
+       software.
+
+LED flashes
+Use Table 7 below to determine the type of fault from the number of LED flashes. The LED
+flashes a preset number of times in repetitive sequence (e.g. 3 flashes – off – 3 flashes – off
+– and so on). Only the faulty node in a multi-node system flashes its LED. Possible operator
+action is listed in the right hand column of the table.
+
+LED         Fault                       Level   Set conditions                        Operator action
+flashes
+0 (off)     Internal hardware failure   RTB     Hardware circuitry not operating.
+0 (off)     Hardware failsafe checks    RTB     Hardware failsafe circuitry not
+                                                operating.
+1           Configuration item out of   VS      At least one configuration items is
+            range                               outside its allowable range.
+1           Corrupt configuration       VS      Configuration data has been
+            data                                corrupted.
+
+
+
+
+                                                                                           Doc. # 177/52701
+6                                                                                                      Rev2
+LED        Fault                       Level   Set conditions                          Operator action
+flashes
+2          Sequence fault              DI      Any drive switch active at power        Reset drive switches
+                                               up.
+2          SRO fault                   DI      FS1 active for user configurable        Deselect FS1 and select
+                                               delay without a direction selected.     drive
+2          FS1 recycle                 DI      FS1 active after a direction change     Reset FS1
+2          Seat fault                  DI      Valid direction selected with           Must be seated with
+                                               operator not seated or operator is      switches inactive
+                                               not seated for a user configurable
+                                               time in drive.
+2          Belly fault                 DI      Set after belly function has
+                                               activated.
+2          Inch sequence fault         DI      Inch switch active along with any
+                                               drive switch active (excluding inch
+                                               switches), seat switch indicating
+                                               operator present or handbrake
+                                               switch active.
+2          Invalid inch switches       DI      Inch forward and inch reverse           Both inch switches
+                                               switches active simultaneously.         inactive.
+2          Two direction fault         DI      Both the forward and reverse            Reset switches
+                                               switches have been active
+                                               simultaneously for greater than
+                                               200 ms.
+3          Fault in electronic power   VS      Fault in electronic power switching
+           switching circuit                   circuit (e.g. MOSFET s/c).
+3          Short circuits on power     VS      Short circuit detected on power
+           outputs                             outputs
+4          Line contactor welded       S       Line contactor closed at power up
+                                               or after coil is de-energized.
+4          Line contactor did not      S       Line contactor did not close when
+           close                               coil is energized.
+6          Steering pot wire-off       VS      Steering pot wire-off is detected.      Check pot. wiring
+6          Steering switch wire-off    VS      Steering switch wire-off is detected.   Check switch wiring
+6          Speed measurement           VS      Speed measurement input wire-off        Check encoder wiring
+           wire-off                            is detected.
+6          Belly switch wire-off       VS      Belly switch wire-off is detected.      Check switch wiring
+6          Throttle wire-off           DI      Throttle wire-off is detected.          Check throttle wiring
+6          Throttle pressed at power   DI      Throttle demand is greater than         Reduce demand
+           up                                  20% at power up.
+
+
+
+
+Doc. # 177/52701
+Rev. 2                                                                                                     7
+LED       Fault                     Level   Set conditions                         Operator action
+flashes
+7         Controller high voltage   S       Battery voltage or capacitor voltage   Isolate controller and
+          protection with line              is above the maximum level             investigate high battery
+          contactor open.                   allowed for the controller with line   voltage
+                                            contactor open.
+7         Battery low voltage       DI      Battery voltage or capacitor voltage   Increase battery voltage
+          protection                        is below a user definable minimum      above user defined
+                                            battery level for a user definable     level
+                                            time.
+7         Controller low voltage    DI      Battery voltage or capacitor voltage   Increase battery voltage
+          protection                        is below the minimum level             above minimum level
+                                            allowed for the controller.
+7         Controller high voltage   DI      Battery voltage or capacitor voltage   Investigate and reduce
+          protection with line              is above the maximum level             battery voltage below
+          contactor closed.                 allowed for the controller with line   maximum level.
+                                            contactor closed.
+7         Battery high voltage      DI      Battery voltage or capacitor voltage   Investigate and reduce
+          protection                        is above a user definable maximum      battery voltage below
+                                            battery level for a user definable     user defined maximum
+                                            time.                                  level.
+8         Controller too hot        I       Controller has reduced power to        Remove loading to
+                                            motor(s) below maximum specified       allow controller to cool
+                                            by user settings due to controller     down.
+                                            over temperature.
+8         Controller too cold       I       Controller has reduced power to        Allow controller to
+                                            motor(s) below maximum specified       warm up to normal
+                                            by user settings due to controller     operating temperature.
+                                            under temperature.
+8         Motor over temperature    I       Controller has reduced power to        Reduce load to motor
+                                            motor(s) below maximum specified       to allow it to cool
+                                            by user settings due to motor over     down.
+                                            temperature.
+12        Communication error       S       Unrecoverable network
+                                            communication error has been
+                                            detected.
+13        Internal software fault   RTB     Software run time error captured
+
+Table 7 Fault identification
+
+Fault list
+Use DriveWizard to access the Fault list. If you don‟t have DriveWizard you can use any
+configuration tool as follows:
+
+
+
+
+                                                                                        Doc. # 177/52701
+8                                                                                                   Rev2
+1. Object 5300h gives information about all active faults. Read sub-index 1 to get the
+     number of active faults. Write to sub-index 2 to select one of the active faults
+     (0 = highest priority) and read back sub-index 3 to read the fault ID at that index.
+
+5. Object 5610h can be used to read a text description of the fault. Write the fault ID to
+     sub-index 1 and read back the fault description from sub-index 2.
+
+Clearing faults
+5301h and 5302h allow faults to be cleared.
+
+
+
+Upgrading the controller software
+It is possible to field update the firmware of the Gen4 controller , typically using Sevcon‟s
+DriveWizard configuration tool.
+
+Please contact Sevcon for assistance with this process.
+
+
+
+
+Doc. # 177/52701
+Rev. 2                                                                                          9
+Appendices
+
+
+
+
+     1
+Automatic Configuration Tables
+This section lists the pre-defined digital and analogue input and output configurations that can be used with the CANopen automatic
+object mapping (see page 6-14).
+
+The entries in the tables refer to the pin a particular function is connected to. MX refers to a pin on the master node, SR refers to a pin
+on the slave node driving the right traction motor, and SP refers to a pin on the slave node driving the pump motor. For example,
+analogue input configuration number 3 has throttle and footbrake inputs going to pins 22 and 34 on the master node, and an
+economy input going to pin 22 on the right traction slave node.
+
+Digital Inputs
+                                IO Selection           0       1       2        3       4       5        6       7        8
+ Key switch                               2100h
+ Horn switch                              2101h
+ Drive enable switch                      2120h                                             MX20
+ Forward Switch                           2121h      MX18 MX18 MX18 MX18               MX18 MX18                MX18     MX18
+ Reverse Switch                           2122h      MX30 MX30 MX30 MX30               MX30 MX30                MX30     MX30
+ FS1 switch                               2123h      MX19 MX19 MX19 MX19                    MX19                MX19     MX19
+ Seat switch                              2124h           MX31 MX31 MX31                    MX31                MX31     MX31
+ Handbrake/Tiller switch                  2125h           MX32 MX21 MX20               MX19 MX9                 MX20     MX20
+ Driveability Select 1 switch             2126h                MX20 MX9                MX31 MX20                MX9      MX9
+ Driveability Select 2 switch             2127h                     MX32                                        MX32     MX32
+ Inch forward switch                      2129h      MX32                              MX20                     SR18     SR18
+ Inch reverse switch                      212Ah      MX21                              MX9                      SR30     SR30
+ Inner left Steer switch                  212Bh                                                                 SR19
+
+
+
+
+                                                                                                                                         1
+                                  IO Selection         0         1          2          3           4          5      6       7     8
+Outer left Steer switch                  212Ch                                                                              SR31
+Inner right Steer switch                 212Dh                                                                              SR20
+Outer right Steer switch                 212Eh                                                                              SR9
+High speed switch                        212Fh
+Footbrake switch                         2130h                              MX32                              MX32
+Traction Inhibit                         2137h
+Belly                                    2139h                                                     MX32
+Pump 1 switch                            2140h                   SP18       SP18                              SP18   MX18
+Pump 2 switch                            2141h                   SP30       SP30                              SP30   MX30
+Pump 3 switch                            2142h                   SP31       SP19                              SP19   MX19
+Pump 4 switch                            2143h                                                                SP31   MX31
+Pump 5 switch                            2144h                                                                SP20   MX20
+Pump 6 switch                            2145h                                                                SP9    MX9
+Pump Inhibit switch                      2150h                                                                       MX32
+Pump Drivability 1 switch                2152h                                                                       MX21
+Pump Drivability 2 switch                2153h
+Power Steer trigger switch               2160h                                         MX21        MX21              MX35 SR32     SR9
+
+Analogue Inputs
+                                IO Selection     0          1          2          3           4          5
+Throttle Input Voltage                2220h      MX22                 MX22 MX22             MX22        MX22
+Footbrake Pot Input Voltage           2221h                                MX34             MX34        SR34
+Economy Input Voltage                 2222h                                SR22             SR22        SR23
+Steer Pot Input Voltage               2223h                           SL22                  SR34        MX34
+Motor temp thermister                 2224h
+Pump Throttle 1 Input Voltage         2240h                 MX22 SP22
+
+
+                                                                                            Doc. # 177/52701
+2                                                                                                       Rev2
+                                 IO Selection        0     1     2     3       4       5
+ Pump Throttle 2 Input Voltage           2241h            MX34
+
+
+
+Analogue Outputs
+                     IO Selection          0     1        2      3         4       5       6    7       8      9     10
+ Line contactor                  2400h   MX3     MX11     MX3    MX3    MX3     MX3     MX3     MX3    SL3    MX3    MX3
+ Line contactor                  2400h                    SP3           SP3
+ External LED                    2401h                                                                 SL7    MX7    MX7
+ Alarm buzzer                    2402h                                                                               SP3
+ Horn                            2403h                                                                 SR3           SR3
+ Lights                          2404h                                                          MX7           SR3    SP7
+ Service Due                     2405h                                          MX7                    SR7           SR7
+ Electro-mechanical brake        2420h   MX7              MX7    MX7                    MX7            MX11   MX11   MX11
+ Traction Motor Cooling Fan      2421h                                                                               SP7
+ Motor Isolation Contactor       2422h
+ High / Low Speed Indication     2423h                                                                               SP11
+ Pump contactor                  2440h                                                  MX11                  SR7
+ Power Steer contactor           2460h   MX11    MX3             MX11           MX11            MX11   SR11   SR11
+
+
+
+
+Doc. # 177/52701
+Rev. 2                                                                                                                      3
+

@@ -1,0 +1,41 @@
+                   Sevcon Gen4 Fault Identification (short version)
+
+You can identify a fault as follows:
+Check the number of LED flashes and use below to determine what action to take.
+A complete fault code chart can be found in manual.
+
+Number of LED flashes
+
+0 (off), no light at all Internal hardware failure or no power to pin1.
+
+1 Configuration data has been corrupted, reprogram as needed.
+
+2 Sequence fault, put in neutral and cycle key.
+
+3 Hardware over voltage or over current, reduce voltage and cycle key
+
+4 Line contactor welded or did not close, check contactor for damage, check wiring and
+replace as needed
+
+5 Motor open circuit, Check motor condition/wiring.
+
+6 Throttle pressed at power up, check throttle and cycle key.
+
+7 BDI warning, low voltage, or voltage too high, check battery replace or charge as
+needed
+
+8 Motor or Controller too hot or cold, reduce load, install better heatsink or fan, check
+thermistor wires to motor
+
+10 Controller is in pre-operational state. Use programming tool to reset
+
+11 Encoder fault, Check encoder wiring and encoder, repair as needed
+
+12 Communication error, Check CANbus wiring, repair as needed
+
+13 Internal software fault, cycle key
+
+14 3rd Party Anonymous Node EMCY received, cycle key
+
+15 Vehicle service required, severe fault
+

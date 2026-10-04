@@ -1,0 +1,235 @@
+# sevcon-can
+
+An async Python CANopen client for Sevcon Gen4 motor controllers. The target
+is the **634A42203, 36/48 V, 275 A, Size 2, Sin/Cos** controller. The bundled
+EDS describes a Gen4 firmware revision; it has not been established as the
+exact dictionary installed on every 634A42203.
+
+The library implements parameter access, drive commands, faults, live PDO
+configuration, RPDO transmission, heartbeat monitoring and SYNC. Offline
+validation includes fault injection and exchanges with an independent
+CANopen stack. Physical controller and Jhoinrch USB compatibility remain
+unverified. This is not a replacement for every proprietary DVT service.
+See [implementation status](docs/IMPLEMENTATION_STATUS.md) for coverage and
+remaining limits.
+
+Requires Python 3.9 or newer. The core has no runtime dependencies.
+
+## Install and choose an adapter
+
+```sh
+python3 -m venv .venv
+. .venv/bin/activate
+python -m pip install .                    # Linux SocketCAN and simulator
+python -m pip install '.[slcan]'           # SLCAN serial firmware
+python -m pip install '.[gs-usb]'          # direct Candlelight USB access
+```
+
+Choose by the adapter's observed interface. The Jhoinrch brand does not
+identify its firmware. On Linux, Candlelight can appear as a SocketCAN
+interface such as `can0`. Configure it to match the controller's CAN bitrate;
+the documented Gen4 default is 1 Mbit/s.
+
+```sh
+sudo ip link set can0 type can bitrate 1000000 restart-ms 100
+sudo ip link set can0 up
+sevcon-can adapters
+sevcon-can --channel can0 --node 0x20 info
+```
+
+For direct Candlelight USB or SLCAN:
+
+```sh
+sevcon-can --backend gs_usb --usb-index 0 --bitrate 1000000 info
+sevcon-can --backend slcan --port /dev/ttyACM0 --bitrate 1000000 info
+```
+
+`--node 0x20` is an example and the CLI default. Use the configured controller
+node id. [Adapter instructions](docs/ADAPTERS.md) cover USB dependencies,
+Windows COM ports, serial baudrate, wiring and diagnostics.
+
+## Read and configure a controller
+
+```python
+import asyncio
+from sevcon_can import AsyncSevconGen4, load_eds
+
+async def main():
+    # Prefer the EDS/DCF supplied for your controller firmware.
+    od = load_eds("controller.eds")
+    async with AsyncSevconGen4.from_socketcan("can0", node_id=0x20, od=od) as dev:
+        print(await dev.validate_identity())
+        print(await dev.read("Device Measurements.Battery Voltage"))
+        print(await dev.active_faults())
+        print(await dev.status())
+
+asyncio.run(main())
+```
+
+`read()` returns `Reading.raw`, `physical`, `label` and `unit`. Numeric writes
+use physical units where the dictionary specifies a scale. Enum labels also
+work, such as `await dev.write(0x6060, 0, "torque")`. Login permissions, ranges,
+read/write access and pre-operational restrictions are checked before a
+parameter write. Range/access checks can involve read-only SDO queries.
+
+Supply the credentials assigned to your controller with `login(password,
+user_id=0)`. The frequently published `0x4BDF` password comes from the OVMS
+Twizy implementation and is the simulator password. It is not established as
+a universal Sevcon credential.
+
+The CLI supports `--eds controller.eds`, `validate-identity`, `encoder`, typed
+`read`/`write`, `read-raw`/`write-raw`, login/logout, NMT, faults, drive commands,
+and live monitoring. Raw SDO access can address objects absent from the EDS;
+it bypasses local metadata checks and requires the correct wire format.
+
+```sh
+sevcon-can --channel can0 --eds controller.eds validate-identity
+sevcon-can --channel can0 --eds controller.eds encoder
+sevcon-can --channel can0 monitor --interval 1
+sevcon-can --sim shell
+```
+
+## Live PDOs and drive control
+
+Use the controller's live PDO configuration, including its identifier and
+mapping. PDO 5 has no predefined CANopen identifier.
+
+```python
+config = await dev.read_pdo_configuration(True, 1)
+consumer = await dev.subscribe_tpdo_live(1)
+async for values in consumer.updates():
+    print(values)
+```
+
+For streamed TPDO values alongside explicitly requested SDO values:
+
+```sh
+python examples/async_stream_and_request.py --sim --seconds 3
+python examples/async_stream_and_request.py --channel can0 --node 0x20 --tpdo 1
+```
+
+The example reads the live TPDO configuration once through SDO, then receives
+mapped values without requesting each update. A second task requests heatsink
+temperature through SDO once per second. Readable objects can be accessed through
+SDO even when they also appear in a TPDO. Hardware mode only reads and listens.
+The bundled EDS defaults disable all five TPDOs; the live device configuration
+determines which values stream and when. Synchronous TPDOs need an existing SYNC
+source, and normal TPDO transmission requires the node to be operational.
+Simulator mode sets up its own voltage/current mapping and emits sample frames.
+Use `--eds path/to/controller.eds` when a matching firmware dictionary is available.
+
+`configure_pdo()` checks all proposed values before applying the CANopen
+sequence to disable the PDO, clear the mapping, write the entries, restore
+the mapping count and enable it. The caller must be in pre-operational and
+have sufficient access. A failed remapping write leaves the PDO disabled.
+`send_rpdo()` sends raw mapped values using the live configuration;
+synchronous RPDOs apply on a later SYNC.
+
+```python
+await dev.login(your_password)
+await dev.goto_preop()
+await dev.configure_pdo(False, 1, [(0x6071, 0, 16)],
+                        cob_id=0x220, transmission_type=255)
+```
+
+Mapping and motor commands depend on the vehicle's master/slave and VPDO
+configuration. The example above does not commission a motor or establish
+that an installed application will accept external torque demands. Sin/Cos
+alignment, motor maps, contactors and application interlocks require the
+correct unit configuration.
+
+`examples/async_control.py` demonstrates drive enabling, fault handling and
+cleanup that attempts zero torque and shutdown on interruption. On real
+hardware it can energize a motor. Its `--sim` mode needs no hardware.
+
+`examples/async_cruise.py` is a cruise-control master: the pedal stays
+analog into the Gen4 while cruise demand goes over CAN (RPDO1 =
+controlword + target torque), with engage/adjust from the keyboard,
+pedal-override and brake cancel, no-regen coast-down, and the RPDO
+timeout armed to Inhibit Drive. The brake input is a Pi GPIO pin
+(`--brake gpio --brake-pin 17`, via gpiozero), a keyboard key, or off:
+
+For a host participating in heartbeat supervision and synchronous PDOs,
+`HeartbeatProducer` and `SyncProducer` run on an existing network:
+
+```python
+from sevcon_can import HeartbeatProducer, SyncProducer
+
+async with HeartbeatProducer(dev.network, node_id=1, period_ms=100), \
+           SyncProducer(dev.network, period_ms=20, cob_id=0x80):
+    await run_your_control_loop()
+```
+
+Use a host node id distinct from every controller. Configure the controller's
+heartbeat consumer and SYNC identifier accordingly. These producers skip
+missed intervals, report send failures on close, and stop on context exit.
+Python scheduling does not guarantee hard real-time delivery.
+
+## Parameter snapshots
+
+Backups contain live identity, dictionary metadata, exact raw EEPROM parameter
+bytes and any failed reads. Restore requires explicitly selected parameters,
+matching identity, login and pre-operational state. It checks the entire
+selection first, writes sequentially and verifies every write by reading it
+back. Failures report completed changes and the failed parameter. It does
+not call `store()` automatically.
+
+```sh
+sevcon-can --sim backup snapshot.json
+sevcon-can --sim --password 0x4BDF config-plan snapshot.json --key 2C01:02
+```
+
+Use `config-restore` to apply the selected changes. The Python equivalents
+are `export_configuration`, `plan_configuration_restore` and
+`restore_configuration`. Communication records and node/bitrate settings are
+excluded from generic restore because they need their own configuration
+sequence. A snapshot is not a DVT DCF export or a firmware image.
+
+## Browser GUI
+
+The localhost GUI shows live readings, faults and per-object Get/Set controls.
+It accepts the same three adapter paths and a controller-specific EDS.
+Each table row shows an **Accepts** column (enum options such as
+`speed (3), torque (4), voltage (5)`, or the numeric range with physical
+units) and a **?** button that explains the object in plain language.
+
+```sh
+python3 tools/sevcon_gui.py --sim
+python3 tools/sevcon_gui.py --channel can0 --node 0x20 --eds controller.eds
+python3 tools/sevcon_gui.py --backend gs_usb --usb-index 0
+python3 tools/sevcon_gui.py --backend slcan --can-port /dev/ttyACM0
+```
+
+`--port` selects the HTTP server port. `--can-port` selects the CAN adapter's
+serial port. No browser libraries or external web services are required.
+
+Click **Dump all values** to read every readable entry in the loaded object
+dictionary, then **Download JSON** to save it for review. The file includes
+controller identity, dictionary metadata, collection timestamps, raw wire
+bytes, interpreted values, units and per-object errors. Write-only entries
+are listed without attempting to read them. Progress and cancellation are
+available; cancelled scans can be downloaded as partial dumps. Values are
+read sequentially, so their timestamps can differ. The dump sends no
+parameter writes and includes monitoring values as well as configuration.
+
+## Validation
+
+```sh
+python -m pip install '.[dev]'
+python conformance/run.py --interop
+python examples/async_log.py --sim
+python examples/async_control.py --sim
+```
+
+The gate checks pinned source hashes, generated table freshness, the test
+suite and independent `canopen`/`python-can` interoperability over a virtual
+bus. Tests cover protocol loss and malformed frames, block transfer CRC and
+retransmission, live PDO changes, drive-state transitions, adapter conversions,
+serial protocol parsing, configuration restore failures and GUI shutdown.
+These checks cannot verify electrical signaling, USB firmware, real bus
+load, or the parameters installed in your controller.
+
+Sources and firmware ambiguities are documented in [sources](docs/SOURCES.md)
+and [specification exceptions](docs/SPEC_EXCEPTIONS.md). Generated
+`src/sevcon_can/tables.py` must be rebuilt with `tools/generate_tables.py` if
+its pinned sources change.

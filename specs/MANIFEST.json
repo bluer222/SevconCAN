@@ -1,0 +1,311 @@
+{
+  "CiA-301-V4.2": {
+    "description": "CiA 301 V4.2.0 Application layer and communication profile",
+    "fetched_on": "2026-10-02",
+    "file": "specs/pdf/CiA-301-V4.2.pdf",
+    "origin": "https://forum.opencyphal.org/uploads/short-url/mNWuvY23DYckSFoSbfam0ji3YWn.pdf",
+    "sha256": "72fd6e9b31842b043f8fa011e13ae9a9ef5dabf811b679343dbce4e2638c9460",
+    "size": 3580855,
+    "text": "specs/text/CiA-301-V4.2.txt",
+    "urls": [
+      "https://forum.opencyphal.org/uploads/short-url/mNWuvY23DYckSFoSbfam0ji3YWn.pdf"
+    ]
+  },
+  "CiA-DS301-V4.02": {
+    "description": "CiA DS301 V4.02 Application layer and communication profile",
+    "fetched_on": "2026-10-02",
+    "file": "specs/pdf/CiA-DS301-V4.02.pdf",
+    "origin": "http://overpof.free.fr/schneider/CAN%20&%20CANopen/CANopen/%A9CiA%20CANCANopen%20CD%20V5.1/standard/ds301.pdf",
+    "sha256": "efc70cadd6099c7511867fe069cb42b9e252a9a57c0831d91929cab00f5bf885",
+    "size": 509025,
+    "text": "specs/text/CiA-DS301-V4.02.txt",
+    "urls": [
+      "http://overpof.free.fr/schneider/CAN%20&%20CANopen/CANopen/%A9CiA%20CANCANopen%20CD%20V5.1/standard/ds301.pdf",
+      "https://doc.ioot.pro/_downloads/744ecdbdca5af7b419b8f5463f6f1b29/ds301.pdf"
+    ]
+  },
+  "CiA-DS401-V2.1": {
+    "description": "CiA DS401 V2.1 Device profile for generic I/O modules",
+    "fetched_on": "2026-10-02",
+    "file": "specs/pdf/CiA-DS401-V2.1.pdf",
+    "origin": "https://doc.ioot.pro/_downloads/22c01eff2273ea4ca6b09dba94106703/ds401.pdf",
+    "sha256": "d5b0702682671205f6666b3a52fd745f1fa7251229e6b5f935eb0bd4afc129d8",
+    "size": 357830,
+    "text": "specs/text/CiA-DS401-V2.1.txt",
+    "urls": [
+      "https://doc.ioot.pro/_downloads/22c01eff2273ea4ca6b09dba94106703/ds401.pdf",
+      "http://overpof.free.fr/schneider/CAN%20&%20CANopen/CANopen/%A9CiA%20CANCANopen%20CD%20V5.1/standard/ds401.pdf"
+    ]
+  },
+  "CiA-DSP306-V1.3": {
+    "description": "CiA DSP306 Electronic data sheet specification",
+    "fetched_on": "2026-10-02",
+    "file": "specs/pdf/CiA-DSP306-V1.3.pdf",
+    "origin": "http://overpof.free.fr/schneider/CAN%20&%20CANopen/CANopen/%A9CiA%20CANCANopen%20CD%20V5.1/standard/dsp306.pdf",
+    "sha256": "fde4b51813f9be4a1e8793dc0b6bfbe9c2c4ea4d7a70c3a6304ea056f31d1317",
+    "size": 209321,
+    "text": "specs/text/CiA-DSP306-V1.3.txt",
+    "urls": [
+      "http://overpof.free.fr/schneider/CAN%20&%20CANopen/CANopen/%A9CiA%20CANCANopen%20CD%20V5.1/standard/dsp306.pdf"
+    ]
+  },
+  "CiA-DSP402-V2.0": {
+    "description": "CiA DSP402 V2.0 Device profile drives and motion control",
+    "fetched_on": "2026-10-02",
+    "file": "specs/pdf/CiA-DSP402-V2.0.pdf",
+    "origin": "http://overpof.free.fr/schneider/CAN%20&%20CANopen/CANopen/%A9CiA%20CANCANopen%20CD%20V5.1/standard/dsp402.pdf",
+    "sha256": "9f5ca1e502add8cfb0006003e4104b89a1eb52ab5bfc060b0e3d3625771725ae",
+    "size": 662978,
+    "text": "specs/text/CiA-DSP402-V2.0.txt",
+    "urls": [
+      "http://overpof.free.fr/schneider/CAN%20&%20CANopen/CANopen/%A9CiA%20CANCANopen%20CD%20V5.1/standard/dsp402.pdf"
+    ]
+  },
+  "Gen4-110V-300A-rev0x00010015.dcf": {
+    "description": "DCF dump, Gen4 110V 300A size 4, firmware rev 0x00010015",
+    "fetched_on": "2026-10-02",
+    "file": "specs/od/Gen4-110V-300A-rev0x00010015.dcf",
+    "origin": "https://raw.githubusercontent.com/brtiberio/Sevcon_gen4/master/documents/2019-06-24-MOTEUR-UK0319-55-110V-300A-S4-GEN4-Config-origine.dcf",
+    "sha256": "43b443d01a0c9c4c4707de910fbd49c40d8ade92572070fbc27f84e06220a678",
+    "size": 486845,
+    "urls": [
+      "https://raw.githubusercontent.com/brtiberio/Sevcon_gen4/master/documents/2019-06-24-MOTEUR-UK0319-55-110V-300A-S4-GEN4-Config-origine.dcf"
+    ]
+  },
+  "Gen4-110V-300A-rev0x00010026-a.dcf": {
+    "description": "DCF dump, Gen4 110V 300A, firmware rev 0x00010026",
+    "fetched_on": "2026-10-02",
+    "file": "specs/od/Gen4-110V-300A-rev0x00010026-a.dcf",
+    "origin": "https://raw.githubusercontent.com/brtiberio/Sevcon_gen4/master/documents/2019-06-13-ME0913-0705-0013-GEN4-110V-300A-PARINAUTES-Ok-a-vide-19h39.dcf",
+    "sha256": "c9a64edbd89b627e4a9a4ce4ec1edb95e86a19677dfc401dd7fc77c9a373f7a3",
+    "size": 530331,
+    "urls": [
+      "https://raw.githubusercontent.com/brtiberio/Sevcon_gen4/master/documents/2019-06-13-ME0913-0705-0013-GEN4-110V-300A-PARINAUTES-Ok-a-vide-19h39.dcf"
+    ]
+  },
+  "Gen4-110V-300A-rev0x00010026-b.dcf": {
+    "description": "DCF dump, Gen4 110V 300A, firmware rev 0x00010026 (pre-operational)",
+    "fetched_on": "2026-10-02",
+    "file": "specs/od/Gen4-110V-300A-rev0x00010026-b.dcf",
+    "origin": "https://raw.githubusercontent.com/brtiberio/Sevcon_gen4/master/documents/2019-06-25-ME0913-0705-0013-GEN4-110V-300A-KES-Ok-a-vide-10h11-Pre-Op.dcf",
+    "sha256": "6d16fdec323de9fdd18826b86483082dc546f2a9591fc2936b3739cb2e7d801c",
+    "size": 530095,
+    "urls": [
+      "https://raw.githubusercontent.com/brtiberio/Sevcon_gen4/master/documents/2019-06-25-ME0913-0705-0013-GEN4-110V-300A-KES-Ok-a-vide-10h11-Pre-Op.dcf"
+    ]
+  },
+  "Gen4-Datasheet-Size-2-4-6-2016": {
+    "description": "Gen4 Size 2/4/6 datasheet, July 2016",
+    "fetched_on": "2026-10-02",
+    "file": "specs/pdf/Gen4-Datasheet-Size-2-4-6-2016.pdf",
+    "origin": "https://raw.githubusercontent.com/brtiberio/Sevcon_gen4/master/documents/Datasheet/gen4-size-2-4-6-july-2016.pdf",
+    "sha256": "b6d7ff81393e7944099c24d08c05752d7d933a707e87a24848eae61d7353e929",
+    "size": 1583916,
+    "text": "specs/text/Gen4-Datasheet-Size-2-4-6-2016.txt",
+    "urls": [
+      "https://raw.githubusercontent.com/brtiberio/Sevcon_gen4/master/documents/Datasheet/gen4-size-2-4-6-july-2016.pdf"
+    ]
+  },
+  "Gen4-Fault-Codes-Short": {
+    "description": "Gen4 LED flash fault identification, short version (Thunderstruck)",
+    "fetched_on": "2026-10-02",
+    "file": "specs/pdf/Gen4-Fault-Codes-Short.pdf",
+    "origin": "https://www.thunderstruck-ev.com/images/companies/1/Gen4%20fault%20code%20short%20version.pdf",
+    "sha256": "1511c58e32836672b2c9c37f5a44dbcaf6ebc74c87e04ffd78fab9d44fe110f8",
+    "size": 43895,
+    "text": "specs/text/Gen4-Fault-Codes-Short.txt",
+    "urls": [
+      "https://www.thunderstruck-ev.com/images/companies/1/Gen4%20fault%20code%20short%20version.pdf"
+    ]
+  },
+  "Gen4-Product-Manual-V2.0": {
+    "description": "Gen4 Product Manual V2.0x (2009)",
+    "fetched_on": "2026-10-02",
+    "file": "specs/pdf/Gen4-Product-Manual-V2.0.pdf",
+    "origin": "https://www.e-kart.fr/images/stories/technique/SEVCON/GEN4-Product-Manual-V2-0-30-01-2009.pdf",
+    "sha256": "b4276260eb3b25f2ff1305c5504daeefda061a87fd98b80b2cc25cb9231c01e6",
+    "size": 2098100,
+    "text": "specs/text/Gen4-Product-Manual-V2.0.txt",
+    "urls": [
+      "https://www.e-kart.fr/images/stories/technique/SEVCON/GEN4-Product-Manual-V2-0-30-01-2009.pdf"
+    ]
+  },
+  "Gen4-Product-Manual-V2.2": {
+    "description": "Gen4 Product Manual V2.2",
+    "fetched_on": "2026-10-02",
+    "file": "specs/pdf/Gen4-Product-Manual-V2.2.pdf",
+    "origin": "http://www.quadmotion.se/shop/files/214845_Sevcon48V/Gen4_Product_Manual_V2.2.en.pdf",
+    "sha256": "3c589fd90e3280d482c0024a9d4d1dadc6720c07287963d49c860b9c3c67bc4b",
+    "size": 2535185,
+    "text": "specs/text/Gen4-Product-Manual-V2.2.txt",
+    "urls": [
+      "http://www.quadmotion.se/shop/files/214845_Sevcon48V/Gen4_Product_Manual_V2.2.en.pdf",
+      "https://raw.githubusercontent.com/brtiberio/Sevcon_gen4/master/documents/Manuals/Gen4_Product_Manual_V2.2.en.pdf"
+    ]
+  },
+  "Gen4-Product-Manual-V3.3": {
+    "description": "Gen4 Applications Reference Manual, doc 177/52701 Rev 3.3",
+    "fetched_on": "2026-10-02",
+    "file": "specs/pdf/Gen4-Product-Manual-V3.3.pdf",
+    "origin": "https://www.e-kart.fr/images/stories/technique/SEVCON/GEN4-Product-Manual-V3-3.pdf",
+    "sha256": "b6257368cf3f39d39a0423dcdc7a2fd05d927a7f7ed3069e386790cbb4e27000",
+    "size": 3594568,
+    "text": "specs/text/Gen4-Product-Manual-V3.3.txt",
+    "urls": [
+      "https://www.e-kart.fr/images/stories/technique/SEVCON/GEN4-Product-Manual-V3-3.pdf"
+    ]
+  },
+  "Gen4-Product-Manual-V3.4": {
+    "description": "Gen4 Applications Reference Manual, doc 177/52701 Rev 3.4",
+    "fetched_on": "2026-10-02",
+    "file": "specs/pdf/Gen4-Product-Manual-V3.4.pdf",
+    "origin": "local:Gen4 Product Manual V3 4.pdf",
+    "sha256": "5acb692d154b975f60277d77654c4cf06b5cc5d990f329fcbeb9414b694dcafe",
+    "size": 3333232,
+    "text": "specs/text/Gen4-Product-Manual-V3.4.txt",
+    "urls": [
+      "https://www.e-kart.fr/images/stories/technique/SEVCON/GEN4-Product-Manual-V3-4.pdf",
+      "https://www.thunderstruck-ev.com/images/Gen4%20Product%20Manual%20V3%204.pdf",
+      "https://raw.githubusercontent.com/brtiberio/Sevcon_gen4/master/documents/Manuals/Gen4%20Product%20Manual%20V3%204.pdf"
+    ]
+  },
+  "Gen4-Size-2-6-Product-Manual": {
+    "description": "Gen4 Size 2/4/6 Product Manual (BorgWarner era); includes 'Controlling Motors via CANopen'",
+    "fetched_on": "2026-10-02",
+    "file": "specs/pdf/Gen4-Size-2-6-Product-Manual.pdf",
+    "origin": "https://electricdriveengineering.com.au/wp-content/uploads/2023/02/Gen4-Size-2-6-Product-Manual.pdf",
+    "sha256": "60163d0ae7e7c69102e72e33a211eae9078dbd47a5df5a5907e57cd513ec2c1b",
+    "size": 4707594,
+    "text": "specs/text/Gen4-Size-2-6-Product-Manual.txt",
+    "urls": [
+      "https://electricdriveengineering.com.au/wp-content/uploads/2023/02/Gen4-Size-2-6-Product-Manual.pdf"
+    ]
+  },
+  "Gen4.eds": {
+    "description": "Sevcon-generated EDS, product 0x07055037 rev 0x00010026",
+    "fetched_on": "2026-10-02",
+    "file": "specs/od/Gen4.eds",
+    "origin": "https://raw.githubusercontent.com/brtiberio/Sevcon_gen4/master/Gen4.eds",
+    "sha256": "cea6b3f990e3d260c3e3cca5f03207214a679540aeb44597cadfc3e121e1093c",
+    "size": 480103,
+    "urls": [
+      "https://raw.githubusercontent.com/brtiberio/Sevcon_gen4/master/Gen4.eds"
+    ]
+  },
+  "SEVCON-GEN4-Calculs-tensions-batteries.xlsx": {
+    "description": "Battery voltage threshold calculator",
+    "fetched_on": "2026-10-02",
+    "file": "specs/extra/SEVCON-GEN4-Calculs-tensions-batteries.xlsx",
+    "origin": "https://raw.githubusercontent.com/brtiberio/Sevcon_gen4/master/documents/SEVCON-GEN4-Calculs-tensions-batteries.xlsx",
+    "sha256": "8ac93accb7ca04e3d9a0aea71487c5e38b9d244e84843296d777847fea4e9acf",
+    "size": 39768,
+    "urls": [
+      "https://raw.githubusercontent.com/brtiberio/Sevcon_gen4/master/documents/SEVCON-GEN4-Calculs-tensions-batteries.xlsx"
+    ]
+  },
+  "Sevcon-AppNote-Vehicle-Setup": {
+    "description": "Sevcon application note: vehicle setup and configuration",
+    "fetched_on": "2026-10-02",
+    "file": "specs/pdf/Sevcon-AppNote-Vehicle-Setup.pdf",
+    "origin": "https://raw.githubusercontent.com/brtiberio/Sevcon_gen4/master/documents/Manuals/SEVCON_App-Note_Vehicle-Setup-and-Configuration.pdf",
+    "sha256": "cc838140e7c6306bc8b2b2265e4683d92edda35774e09803030a7faf283cc51a",
+    "size": 476286,
+    "text": "specs/text/Sevcon-AppNote-Vehicle-Setup.txt",
+    "urls": [
+      "https://raw.githubusercontent.com/brtiberio/Sevcon_gen4/master/documents/Manuals/SEVCON_App-Note_Vehicle-Setup-and-Configuration.pdf"
+    ]
+  },
+  "Sevcon-DVT-Tutorial": {
+    "description": "Sevcon DVT (DriveWizard) tutorial",
+    "fetched_on": "2026-10-02",
+    "file": "specs/pdf/Sevcon-DVT-Tutorial.pdf",
+    "origin": "https://raw.githubusercontent.com/brtiberio/Sevcon_gen4/master/documents/Manuals/DVT%20Tutorial.pdf",
+    "sha256": "d3f6785a3048a1ab832ac96eeef56c8b2eb285e90e9fc2c008019681fe9517dd",
+    "size": 1567467,
+    "text": "specs/text/Sevcon-DVT-Tutorial.txt",
+    "urls": [
+      "https://raw.githubusercontent.com/brtiberio/Sevcon_gen4/master/documents/Manuals/DVT%20Tutorial.pdf"
+    ]
+  },
+  "Sevcon-Gen4-Programming-Cable": {
+    "description": "Gen4 35-pin programming cable pinout",
+    "fetched_on": "2026-10-02",
+    "file": "specs/pdf/Sevcon-Gen4-Programming-Cable.pdf",
+    "origin": "https://raw.githubusercontent.com/brtiberio/Sevcon_gen4/master/documents/other%20docs/Cable-35-broches-PROG.pdf",
+    "sha256": "fdf79876c5313baeb72ccacd5fe68149ef2fb03410d29b39831cd60e6c9608e3",
+    "size": 35209,
+    "text": "specs/text/Sevcon-Gen4-Programming-Cable.txt",
+    "urls": [
+      "https://raw.githubusercontent.com/brtiberio/Sevcon_gen4/master/documents/other%20docs/Cable-35-broches-PROG.pdf"
+    ]
+  },
+  "fault-codes.rar": {
+    "description": "Archive of Gen4 fault code tables",
+    "fetched_on": "2026-10-02",
+    "file": "specs/extra/fault-codes.rar",
+    "origin": "https://raw.githubusercontent.com/brtiberio/Sevcon_gen4/master/documents/fault%20codes.rar",
+    "sha256": "038e7ab38770472ecda66b74824744caf19fe1fb3515e9eaf9bf21e135b8729c",
+    "size": 34053,
+    "unpacked": [
+      "specs/extra/fault-codes/fault codes.xlsx"
+    ],
+    "urls": [
+      "https://raw.githubusercontent.com/brtiberio/Sevcon_gen4/master/documents/fault%20codes.rar"
+    ]
+  },
+  "ovms-rt_sevcon.cpp": {
+    "description": "OVMS Renault Twizy Gen4 client: login (5000h), NMT state (5110h)",
+    "fetched_on": "2026-10-02",
+    "file": "specs/extra/ovms-rt_sevcon.cpp",
+    "origin": "https://raw.githubusercontent.com/openvehicles/Open-Vehicle-Monitoring-System-3/master/vehicle/OVMS.V3/components/vehicle_renaulttwizy/src/rt_sevcon.cpp",
+    "sha256": "458a92ce453894888438f1576290fd1fc6bcb889b00c011fc55c7efadda9d38d",
+    "size": 18651,
+    "urls": [
+      "https://raw.githubusercontent.com/openvehicles/Open-Vehicle-Monitoring-System-3/master/vehicle/OVMS.V3/components/vehicle_renaulttwizy/src/rt_sevcon.cpp"
+    ]
+  },
+  "ovms-rt_sevcon.h": {
+    "description": "OVMS Renault Twizy Gen4 product codes (1018h,2)",
+    "fetched_on": "2026-10-02",
+    "file": "specs/extra/ovms-rt_sevcon.h",
+    "origin": "https://raw.githubusercontent.com/openvehicles/Open-Vehicle-Monitoring-System-3/master/vehicle/OVMS.V3/components/vehicle_renaulttwizy/src/rt_sevcon.h",
+    "sha256": "7a9cda5733d546a6b45b37b0b29d81ef18bbd4c7b37a2607313a895087bff032",
+    "size": 15781,
+    "urls": [
+      "https://raw.githubusercontent.com/openvehicles/Open-Vehicle-Monitoring-System-3/master/vehicle/OVMS.V3/components/vehicle_renaulttwizy/src/rt_sevcon.h"
+    ]
+  },
+  "ovms-rt_sevcon_faults.cpp": {
+    "description": "OVMS Renault Twizy (Gen4) fault table and EMCY decoding",
+    "fetched_on": "2026-10-02",
+    "file": "specs/extra/ovms-rt_sevcon_faults.cpp",
+    "origin": "https://raw.githubusercontent.com/openvehicles/Open-Vehicle-Monitoring-System-3/master/vehicle/OVMS.V3/components/vehicle_renaulttwizy/src/rt_sevcon_faults.cpp",
+    "sha256": "ffde609cf648ccaadb2c3f59761c85798500fed6b8c9a624070fac33d7d1e2d2",
+    "size": 38252,
+    "urls": [
+      "https://raw.githubusercontent.com/openvehicles/Open-Vehicle-Monitoring-System-3/master/vehicle/OVMS.V3/components/vehicle_renaulttwizy/src/rt_sevcon_faults.cpp"
+    ]
+  },
+  "victron-sevcon.c": {
+    "description": "Victron dbus-canopen-motordrive Gen4 driver: fault table, EMCY decoding",
+    "fetched_on": "2026-10-02",
+    "file": "specs/extra/victron-sevcon.c",
+    "origin": "https://raw.githubusercontent.com/victronenergy/dbus-canopen-motordrive/master/src/drivers/sevcon.c",
+    "sha256": "324f5cf83c4c2159c4ec73a09aad2fbcf386dc64b9c5b83bf9e60f9366a1db4d",
+    "size": 20578,
+    "urls": [
+      "https://raw.githubusercontent.com/victronenergy/dbus-canopen-motordrive/master/src/drivers/sevcon.c"
+    ]
+  },
+  "victron-sevcon_gen4.py": {
+    "description": "Victron Gen4 simulator: 5100h scaling, EMCY example",
+    "fetched_on": "2026-10-02",
+    "file": "specs/extra/victron-sevcon_gen4.py",
+    "origin": "https://raw.githubusercontent.com/victronenergy/dbus-canopen-motordrive/master/tools/simulators/sevcon_gen4.py",
+    "sha256": "859002b5385d50538cdc6de914719d53a82fa9faaa4589ff14abcbeddb33132e",
+    "size": 4103,
+    "urls": [
+      "https://raw.githubusercontent.com/victronenergy/dbus-canopen-motordrive/master/tools/simulators/sevcon_gen4.py"
+    ]
+  }
+}

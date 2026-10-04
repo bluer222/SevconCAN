@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sevcon-can"
+version = "0.1.0"
+description = "Async Python CANopen client for Sevcon Gen4 motor controllers (CiA 301/401/402)"
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [{ name = "sevcon-can contributors" }]
+keywords = ["sevcon", "gen4", "canopen", "cia402", "cia401", "socketcan", "motor controller"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "License :: OSI Approved :: MIT License",
+  "Framework :: AsyncIO",
+  "Topic :: Scientific/Engineering :: Interface Engine/Protocol Translator",
+]
+dependencies = []
+
+[project.optional-dependencies]
+python-can = ["python-can>=4.2"]
+slcan = ["python-can[serial]>=4.2"]
+gs-usb = ["python-can[gs-usb]>=4.2"]
+dev = ["python-can[serial]>=4.2", "canopen>=2.4,<3"]
+
+[project.scripts]
+sevcon-can = "sevcon_can.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+sevcon_can = ["py.typed", "data/*.eds"]

@@ -1,0 +1,91 @@
+                                                     Gen4
+                                                     Size 2 Size 4
+AC Motor Controller                                  Size 6
+The Gen4 range represents the latest design in
+compact AC Controllers. These reliable controllers
+are intended for on-road and off-road electric
+vehicles and feature the smallest size in the
+industry for their power capacity.
+
+Thanks to the high efficiency it is possible to
+integrate these controllers into very tight spaces
+without sacrificing performance. The design has
+been optimised for the lowest possible installed
+cost while maintaining superior reliability in the
+most demanding applications.
+
+
+
+
+Features
+•   Advance flux vector control
+•   Autocheck system diagnostic
+•   Integrated logic circuit
+•   Hardware & software failsafe watchdog
+    operation
+•   Supports both PMAC and AC motor
+•   Induction motor control
+•   Integrated fuse holder
+•   IP66 protection
+Key Parameters
+
+Model                      Size 2     Size 4 Size 6 Size 2 Size 4 Size 6 Size 2 Size 4 Size 6 Size 2* Size 4
+Nominal Battery Voltage   24 VDC       24 to 36 VDC       36 to 48 VDC             72 to 80 VDC          96 to 120 VDC
+Max. operating Voltage    34.8 VDC      52.2 VDC             69.6 VDC                 116 VDC               150 VDC
+Min. operating Voltage              12.7 VDC                 19.3 VDC                 39.1 VDC               48 VDC
+Peak Current (2 min)       300A       450A     650A   275A    450A      650A   180A    350A      550A     150A     300A
+Boost Current (10 sec)     360A       540A     780A   330A    540A      780A   215A    420A      660A     180A     360A
+Cont. Current (60 min)     120A       180A     260A   110A    180A      260A   75A     140A      220A     60A      120A
+                                                                               * Not yet available. Please contact Sevcon
+
+
+Multiple Motor Feedback
+Options
+Gen4 provides a number of motor feedback
+possibilities from a range of hardware inputs and
+software control, allowing a great deal of flexibility.
+
+•   Absolute UVW encoder input
+•   Absolute Sin/Cos encoder input
+•   Incremental AB encoder input
+
+
+
+Integrated I/O
+Gen4 includes a fully-integrated set of inputs and
+outputs (I/0) designed to handle a wide range of
+vehicle requirements. This eliminated the need
+for additional external I/O modules or vehicle
+controllers and connectors.
+
+•   8 digital inputs                                                    Configuration Tools
+•   2 analogue inputs (can be configured as digital)
+•   3 contactor/solenoid outputs
+                                                                        Sevcon offers a range of configuration tools for the
+•   1 encoder supply output - programmable 5V or
+                                                                        Gen4 controller, with options for Windows based
+    10V
+                                                                        PC or calibrator handset unit. These tools provide a
+                                                                        simple yet powerful means of accessing the CAN-
+                                                                        open bus for diagnostics or parameter adjustment.
+Other Features                                                          The handset unit features password protected
+                                                                        access levels and a customized logo start-up
+                                                                        screen.
+•   A CANopen bus allows easy interconnection of
+    controllers and devices such as displays and
+    driver controls
+•   The CANbus allows the user to wire the vehicle
+    to best suit vehicle layout since inputs and
+    outputs can be connected to any of the
+    controllers on the vehicle and the desired
+    status is passed over the CAN network to the
+    relevant motor controller
+•    The Gen4 controller can dynamically change
+    the allowed battery current by exchanging
+    CAN messages with a compatible Battery
+    Management System
+•   Configurable as vehicle control master or motor
+    slave                                                                                                         For more
+                                                                                                              information visit
+                                                                                                                sevcon.com
+
