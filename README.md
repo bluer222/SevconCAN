@@ -89,6 +89,58 @@ sevcon-can --channel can0 monitor --interval 1
 sevcon-can --sim shell
 ```
 
+## Importable parameter dictionaries
+
+The generated `sevcon_can.object_catalog` module contains 1,340 descriptions
+from the bundled EDS. Each description dictionary uses `(index, subindex)` keys
+and human-readable parameter paths with units as string values.
+
+```python
+from sevcon_can.object_catalog import (
+    ALL_OBJECTS, STREAM_OBJECTS, AUTH_LEVEL_4, WRITABLE_AUTH_LEVEL_4,
+)
+
+print(ALL_OBJECTS[(0x5100, 1)])  # Device Measurements.Battery Voltage [V]
+for key, description in STREAM_OBJECTS.items():
+    print(key, description)
+```
+
+`AUTH_LEVEL_0` through `AUTH_LEVEL_5` group entries by their exact EDS
+`ACCESS_LEVEL`. `AUTH_LEVEL_UNSPECIFIED` retains entries without that metadata.
+`BY_REQUIRED_AUTH_LEVEL` collects those groups by numeric level, with `None`
+for unspecified entries. These levels govern writes, not read visibility.
+`WRITABLE_AUTH_LEVEL_0` through `WRITABLE_AUTH_LEVEL_5` contain writable entries
+available at each level, including lower-level entries and entries with no EDS
+level restriction. Other rules, including pre-operational-only writes, still
+apply. `READABLE_OBJECTS` and `OBJECT_METADATA` provide read access and metadata.
+
+`TPDO_OBJECTS` groups all mapped entries by PDO number, including disabled PDOs.
+`STREAM_OBJECTS` combines enabled TPDO mappings. The bundled defaults disable
+all TPDOs, so its stream dictionary is empty. Generate a module from your live
+controller to capture its actual configuration:
+
+```sh
+python3 tools/generate_dictionaries.py --channel can0 --node 0x20 --out controller_objects.py
+```
+
+This only reads communication and mapping records. It does not enable PDOs or
+request every parameter value. Enabled mappings still depend on the controller's
+NMT state, transmission type, SYNC and events to produce traffic. `STREAM_SOURCE`
+identifies whether the output used live records or EDS/DCF settings.
+
+To regenerate offline from the bundled EDS or another firmware dictionary:
+
+```sh
+python3 tools/generate_dictionaries.py
+python3 tools/generate_dictionaries.py --eds controller.eds --out controller_objects.py
+```
+
+The output has no imports or runtime dependencies and can be copied into a
+larger project and used as `from controller_objects import ALL_OBJECTS`.
+The generator is also available as `sevcon_can.catalog.build_catalog()` and
+`write_catalog()` for projects that already have an object dictionary or live
+PDO configuration records.
+
 ## Live PDOs and drive control
 
 Use the controller's live PDO configuration, including its identifier and
@@ -104,19 +156,16 @@ async for values in consumer.updates():
 For streamed TPDO values alongside explicitly requested SDO values:
 
 ```sh
-python examples/async_stream_and_request.py --sim --seconds 3
-python examples/async_stream_and_request.py --channel can0 --node 0x20 --tpdo 1
+python3 examples/async_stream_and_request.py can0 0x20
 ```
 
-The example reads the live TPDO configuration once through SDO, then receives
-mapped values without requesting each update. A second task requests heatsink
-temperature through SDO once per second. Readable objects can be accessed through
-SDO even when they also appear in a TPDO. Hardware mode only reads and listens.
+The example requests battery voltage, battery current and heatsink temperature
+through SDO, then listens to TPDO1 using its live identifier and mapping.
+Readable objects can be accessed through SDO even when they also appear in a
+TPDO. The example only reads and listens; TPDO1 must already be enabled.
 The bundled EDS defaults disable all five TPDOs; the live device configuration
 determines which values stream and when. Synchronous TPDOs need an existing SYNC
 source, and normal TPDO transmission requires the node to be operational.
-Simulator mode sets up its own voltage/current mapping and emits sample frames.
-Use `--eds path/to/controller.eds` when a matching firmware dictionary is available.
 
 `configure_pdo()` checks all proposed values before applying the CANopen
 sequence to disable the PDO, clear the mapping, write the entries, restore
