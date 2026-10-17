@@ -32,6 +32,7 @@ class DictionaryEntry:
 
     Limits are unsigned 32-bit wire values. They are not decoded as signed
     values or physical units, and flags are not interpreted as permissions.
+    A 0..0 pair means the controller table stores no range for the entry.
     Unknown internal type/access codes remain available without guessing.
     """
 
@@ -150,7 +151,12 @@ async def discover_dictionary(device, *, start: int = 0,
         for name, value in expected.items():
             if entry[name] != value:
                 differences[name] = {"dictionary": value, "controller": entry[name]}
-        for name, limit_value in (("low_limit_raw", var.low), ("high_limit_raw", var.high)):
+        limits = (("low_limit_raw", var.low), ("high_limit_raw", var.high))
+        if entry["low_limit_raw"] == entry["high_limit_raw"] == 0:
+            # Gen4 reports 0..0 for rows without a stored range, even constants
+            # holding nonzero values, so this pair cannot disagree with the EDS.
+            limits = ()
+        for name, limit_value in limits:
             if limit_value is None:
                 continue
             bounds = dt.limits(var.data_type)

@@ -21,6 +21,25 @@ class TestLogin(unittest.TestCase):
                 self.assertEqual(await dev.logout(), 0)
         run(go())
 
+    def test_logout_abort_is_raised_while_still_logged_in(self):
+        async def go():
+            from sevcon_can.exceptions import SdoAbortError
+            dev, sim = create_pair()
+            write = sim._sdo_write
+
+            def keep_level(index, subindex, data):
+                if (index, subindex) == (0x5000, 2) and not any(data):
+                    raise SdoAbortError(0x08000000, index, subindex)
+                write(index, subindex, data)
+
+            sim._sdo_write = keep_level
+            async with dev, sim:
+                await dev.login(SIM_PASSWORD)
+                with self.assertRaises(SdoAbortError):
+                    await dev.logout()
+                self.assertEqual(await dev.access_level(), 4)
+        run(go())
+
     def test_bad_password_aborts(self):
         async def go():
             from sevcon_can.exceptions import SdoAbortError

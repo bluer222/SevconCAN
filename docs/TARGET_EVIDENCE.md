@@ -35,7 +35,43 @@ sevcon-can --channel can0 --node 1 discover --json > installed-dictionary.json
 Use the actual adapter channel if it differs. This selects metadata rows
 without changing motor parameters or NMT state.
 
-## Scan results
+## Installed dictionary enumeration
+
+On 2026-10-17 the table was enumerated on `can0` at 500 kbit/s, node 1,
+not logged in (`5000h:1` reads 0). The scan took 148 seconds.
+
+| Source file | Bytes | SHA-256 |
+| --- | ---: | --- |
+| `installed-dictionary.json` | 918976 | `57db1d401814aca0228b65f515f5e50dd1a0065856d4e6bed822113851187df2` |
+
+All 1340 rows were read, and their address set is identical to the bundled
+`Gen4.eds`. No installed entry is missing from it, and none of its entries
+is absent from the controller. Data type, access and PDO mapping agree on
+every row. The object version agrees on every row, and every EDS row
+declares one. Internal type codes 0, 1, 2, 3, 5, 6, 7, 9 and 15 occur.
+Every row reads object type 7 and object flags `0xFF`, so neither field
+distinguishes record members or carries the EDS `ObjFlags`.
+
+Limits are reported for 169 rows, all writable configuration entries, and
+each agrees with the EDS. The other 1171 rows read `0..0`. This includes
+constants holding nonzero values, such as `1018h:1`, so the pair means the
+table stores no range for the row. Reported limits also occur on
+Engineering-level entries while not logged in, so the omission is not an
+access restriction. A repeat scan logged in at Engineering level 4, user ID
+0, returned identical rows. Discovery no longer reports these pairs as metadata
+mismatches. The firmware may still range-check writes to such rows.
+
+Logging out by writing user ID 0 and then password 0 aborts the password
+write with `08000000h`, Gen4 reason 9, login failed. `5000h:1` nevertheless
+reads 0 afterwards. `logout()` accepts that abort only when the level reads 0.
+
+No entry from `Gen4-supplement.eds` is installed. Direct reads return
+`06020000h` for `291Fh`, `607Eh`, `2905h` and `6410h`, and `06090011h` for
+`2903h:4`, `2903h:6`, `290Eh:4` and `2910h:16`. None of the 34 unresolved
+addresses in [the coverage audit](COVERAGE.md) is in the installed table.
+Do not select `--supplemental` for this controller.
+
+## Value dump results
 
 | Observation | First dump | Second dump |
 | --- | ---: | ---: |
@@ -77,13 +113,12 @@ than a decoded label copied from that dictionary.
 
 Both scans read `5630h:1` as 1340. The other table metadata fields are zero,
 and the files contain no sequence of selected table rows. Equal entry counts
-do not prove equal address sets. The new
-`discover_dictionary()` workflow must enumerate the cursor before reporting
-installed-only entries, absent dictionary entries or metadata disagreements.
+alone did not prove equal address sets. The installed dictionary enumeration
+above establishes that.
 
 Neither dump attempts `291Fh`, the optional creep-torque entry, or any of the
-unresolved addresses listed in [the coverage audit](COVERAGE.md). Their
-presence, absence and parameter formats on this controller remain unverified.
+unresolved addresses listed in [the coverage audit](COVERAGE.md). The
+enumeration above shows that this controller does not install them.
 The AC induction firmware used as a supplemental source must not replace
 the PMAC dictionary automatically.
 

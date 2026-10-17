@@ -32,15 +32,15 @@ schemas fail the gate. That strict gate currently fails as intended.
 The actual target reports product `0x0705301B`, revision `0x00010026`,
 software `0705.0013`, and PMAC firmware. Its Engineering value dump contains
 1,328 successful reads, three access-level aborts and nine write-only skips.
-The dumps did not enumerate the table or request creep torque, so equal
-1,340-entry counts do not establish identical address sets. See
+A `5630h` enumeration of the target found the same 1,340 addresses as the
+bundled EDS, with matching data type, access, PDO mapping and object version
+on every row. The 169 limits it reports also match. None of the supplement
+entries, including creep torque, are installed. See
 [target evidence](TARGET_EVIDENCE.md).
 
-The next controller-specific check is `sevcon-can --channel can0 --node <id>
-discover --json`, with the actual adapter and node selected. It enumerates
-`5630h`, reports missing and absent entries and metadata disagreements, and
-writes only the metadata cursor. It cannot supply unknown names or scaling.
-No CAN interface was available in this execution environment.
+`sevcon-can --channel can0 --node <id> discover --json` repeats this check
+for another controller. It writes only the metadata cursor and cannot
+supply unknown names or scaling.
 
 ## Coverage
 
@@ -50,7 +50,7 @@ No CAN interface was available in this execution environment.
 | Jhoinrch connection | Candlelight through Linux SocketCAN or direct gs_usb; SLCAN through serial | Requires compatible observed firmware; model name alone is insufficient |
 | SDO | Expedited, segmented, block upload/download, CRC, retransmission, aborts, per-transfer timeouts and cancellation | EDS COMMS_TIMEOUT honored; independent exchanges including loss; target dumps include a 9,488-byte upload |
 | Object dictionary | EDS/DCF parser, raw access, scaling, labels, limits, bitfields, optional supplement and login permissions | Exact custom EDS supported; supplements remain firmware dependent; names, labels and bitfields searchable |
-| Installed dictionary discovery | Bounded `5630h` enumeration, resume, missing/absent entries and schema differences | Internal datatype mapping verified against EDS/OVMS; duplicate/zero addresses rejected; no invented names or scaling |
+| Installed dictionary discovery | Bounded `5630h` enumeration, resume, missing/absent entries and schema differences | Full scan of the target matches the bundled EDS; `0..0` limits mean no stored range; duplicate/zero addresses rejected; no invented names or scaling |
 | NMT | Start/stop/pre-operational/reset; heartbeat monitor; bounded state polling | Simulator and independent stack tests |
 | EMCY | Error register and Sevcon fault decoding; explicit/live `1014h` identifiers | Standard/extended identifiers; CLI follows live configuration; independent producer test |
 | PDO | Five live records, TPDO subscriptions/RTR requests, types 252/253, RPDO sends, dummy mappings and remapping | Pre-operational and EDS restrictions enforced; fifth PDO needs configured identifier; extended support depends on firmware |

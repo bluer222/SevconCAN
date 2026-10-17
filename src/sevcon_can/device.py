@@ -441,12 +441,22 @@ class AsyncSevconGen4:
         return level
 
     async def logout(self) -> int:
-        """Log out (user id and password 0) and return the level (expect 0)."""
+        """Log out (user id and password 0) and return the level (expect 0).
+
+        Gen4 aborts the zero password as a failed login (reason 9) while
+        still logging out, so that abort is raised only if a level remains.
+        """
         self._check_open()
         var_pwd = self.variable((0x5000, 2))
         var_uid = self.variable((0x5000, 3))
         await self.write_raw(var_uid.index, var_uid.subindex, var_uid.encode_raw(0))
-        await self.write_raw(var_pwd.index, var_pwd.subindex, var_pwd.encode_raw(0))
+        try:
+            await self.write_raw(var_pwd.index, var_pwd.subindex, var_pwd.encode_raw(0))
+        except SdoAbortError:
+            self._access_level = None
+            if await self.access_level(cached=False):
+                raise
+            return 0
         self._access_level = None
         return await self.access_level(cached=False) or 0
 

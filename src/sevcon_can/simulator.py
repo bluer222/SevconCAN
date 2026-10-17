@@ -274,7 +274,10 @@ class SimulatedGen4:
         if (index, subindex) == (0x5000, 2):
             password = int.from_bytes(data[:2], "little")
             if password == 0:
+                # The target logs out, then reports the zero password as a failed login.
                 self._store[(0x5000, 1)] = bytes((0,))
+                self._store[(0x5310, 0)] = _U16.pack(9)
+                raise SdoAbortError(0x08000000, index, subindex)
             elif password == SIM_PASSWORD:
                 self._store[(0x5000, 1)] = bytes((4,))
             else:

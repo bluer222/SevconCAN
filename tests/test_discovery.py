@@ -33,6 +33,23 @@ class TestDiscovery(unittest.TestCase):
                 self.assertEqual(set(mismatch["differences"]), {"low_limit_raw"})
         asyncio.run(go())
 
+    def test_unreported_zero_limit_pair_is_not_a_mismatch(self):
+        async def go():
+            dev, sim = create_pair()
+            sim._dictionary_entries = [sim.od.variable((0x1018, 1))]
+            metadata = sim._dictionary_metadata
+            sim._dictionary_metadata = lambda sub: bytes(4) if sub in (7, 8) else metadata(sub)
+            async with dev, sim:
+                report = await dev.discover_dictionary()
+                self.assertEqual(report["metadata_mismatches"], [])
+                entry, = report["entries"]
+                self.assertEqual((entry["low_limit_raw"], entry["high_limit_raw"]), (0, 0))
+                sim._dictionary_metadata = lambda sub: (bytes(4) if sub == 7 else
+                                                        b"\x01\x00\x00\x00" if sub == 8 else metadata(sub))
+                mismatch, = (await dev.discover_dictionary())["metadata_mismatches"]
+                self.assertEqual(set(mismatch["differences"]), {"high_limit_raw"})
+        asyncio.run(go())
+
     def test_ignored_cursor_or_reserved_address_cannot_claim_complete_scan(self):
         async def go():
             dev, sim = create_pair()
