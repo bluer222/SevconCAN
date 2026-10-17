@@ -136,3 +136,9 @@ none establishes target-controller compatibility.
 | `UK0319_35.dld` | `1e875cc3540a76a52527b0028b80a38e8862ccf3` |
 | `UK0319B38.dld` | `a4bf24713c290033a7be4cf6197ac431ee2cba62` |
 | `UK0319A44.dld` | `af81b5a30e05d7180abd8d5d0fb37c571e663496` |
+
+A local preservation copy lives in `.local-backups/sevcon-dvt/`, excluded by
+the repository's `.gitignore`. Its `README.md`, `MANIFEST.json` and
+`vault-status.json` record provenance, file checksums, known incomplete
+downloads and the full-snapshot recovery status. The preserved files are
+local only; Git commits and pushes do not include this directory.
