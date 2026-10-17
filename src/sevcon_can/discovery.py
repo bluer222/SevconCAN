@@ -151,13 +151,21 @@ async def discover_dictionary(device, *, start: int = 0,
             if entry[name] != value:
                 differences[name] = {"dictionary": value, "controller": entry[name]}
         for name, limit_value in (("low_limit_raw", var.low), ("high_limit_raw", var.high)):
-            # Signed narrow limits may be zero-extended or sign-extended to U32.
-            # Compare their typed bit pattern; no wider limit is fabricated.
             if limit_value is None:
                 continue
-            size = dt.size_of(var.data_type)
-            mask = (1 << (min(size, 4) * 8)) - 1 if size is not None else 0xFFFFFFFF
-            if dt.limits(var.data_type) is not None and entry[name] & mask != limit_value & mask:
+            bounds = dt.limits(var.data_type)
+            if bounds is None:
+                continue
+            representations = {limit_value & 0xFFFFFFFF}
+            if bounds[0] < 0:
+                # Accept canonical zero/sign extension of a narrow signed
+                # limit, without hiding unrelated high bits or unsigned errors.
+                bits = min(dt.size_of(var.data_type), 4) * 8
+                narrow = limit_value & ((1 << bits) - 1)
+                representations.add(narrow)
+                signed = narrow - (1 << bits) if narrow & (1 << (bits - 1)) else narrow
+                representations.add(signed & 0xFFFFFFFF)
+            if entry[name] not in representations:
                 differences[name] = {"dictionary": limit_value, "controller": entry[name]}
         if differences:
             mismatches.append({"index": entry["index"], "subindex": entry["subindex"],

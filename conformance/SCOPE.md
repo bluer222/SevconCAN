@@ -20,6 +20,8 @@ certification or a hardware acceptance test.
    Added checks cover supplemental codecs, signed ranges, raw/binary writes,
    installed dictionary metadata/integrity, live EMCY identifiers, RTR TPDOs,
    RPDO padding, per-object timeouts and shutdown/state-cache behavior.
+   Concurrent fault selection and canonical signed/unsigned metadata-limit
+   comparisons have separate regressions.
 4. With the optional backend dependencies installed, real python-can virtual
    backends and pyserial SLCAN loopback exercise frame conversion, remote
    DLC, error payloads, serial parsing, receiver failures and resource cleanup.

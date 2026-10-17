@@ -66,17 +66,23 @@ class ActiveFault:
 
 
 async def read_active_faults(device: "AsyncSevconGen4") -> List[ActiveFault]:  # noqa: F821
-    """Read the live active-fault list via ``5300h``."""
-    count = int(await device.read_physical(0x5300, 1))
-    faults: List[ActiveFault] = []
-    for position in range(count):
-        await device.write(0x5300, 2, position)
-        fid = int(await device.read_physical(0x5300, 3))
-        faults.append(ActiveFault(position, fid, GEN4_FAULTS.get(fid)))
-    return faults
+    """Read the live active-fault list via ``5300h``.
+
+    Serialize selection and reads among callers sharing this device. The
+    controller's live fault list can still change during the scan.
+    """
+    async with device._fault_list_lock:
+        count = int(await device.read_physical(0x5300, 1))
+        faults: List[ActiveFault] = []
+        for position in range(count):
+            await device.write(0x5300, 2, position)
+            fid = int(await device.read_physical(0x5300, 3))
+            faults.append(ActiveFault(position, fid, GEN4_FAULTS.get(fid)))
+        return faults
 
 
 async def describe_fault(device: "AsyncSevconGen4", fault_id: int) -> str:  # noqa: F821
     """Ask the controller for its own text of ``fault_id`` via ``5610h``."""
-    await device.write(0x5610, 1, fault_id)
-    return str(await device.read_physical(0x5610, 2))
+    async with device._fault_text_lock:
+        await device.write(0x5610, 1, fault_id)
+        return str(await device.read_physical(0x5610, 2))

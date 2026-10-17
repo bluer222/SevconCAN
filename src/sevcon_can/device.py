@@ -127,6 +127,8 @@ class AsyncSevconGen4:
         self._access_level: Optional[int] = None
         self._nmt_state: Optional[int] = None
         self._dictionary_lock = asyncio.Lock()
+        self._fault_list_lock = asyncio.Lock()
+        self._fault_text_lock = asyncio.Lock()
         self._hb_sub = network.subscribe(
             _nmt.HEARTBEAT_BASE + node_id, self._on_heartbeat)
 

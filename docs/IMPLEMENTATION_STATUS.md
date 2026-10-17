@@ -11,6 +11,9 @@ no new controller commands were issued during this work.
 Repeated independent audits found and fixed omissions in parameter coverage,
 EMCY identifiers, PDO remote requests and padding, binary values, per-object
 SDO timeouts, SYNC counters, heartbeat cleanup and state-cache validation.
+Fault list/text selectors are serialized across callers sharing one device,
+and discovery limit comparisons reject noncanonical high bits rather than
+silently masking metadata disagreements.
 The default dictionary remains the original 1,340 entries. The explicit
 `--supplemental` selection provides 89 additional source-backed definitions,
 including `291Fh` creep torque. It never replaces a baseline definition.
@@ -118,7 +121,7 @@ installations can run `python conformance/run.py`; optional backend tests may
 be skipped when their dependencies are absent, and the output reports that.
 
 Recorded on 2026-10-16 with Python 3.14.7, python-can 4.6.1 and canopen 2.4.1:
-**237 tests passed with zero skips; 17 independent interoperability checks
+**240 tests passed with zero skips; 17 independent interoperability checks
 passed.** Pinned source hashes, generated tables, optional dictionary
 freshness and coverage-accounting checks passed. The strict coverage check
 returned failure for its 34 unresolved references, as intended. GUI HTTP

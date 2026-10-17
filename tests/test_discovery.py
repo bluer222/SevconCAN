@@ -14,6 +14,25 @@ from sevcon_can.simulator import create_pair
 
 
 class TestDiscovery(unittest.TestCase):
+    def test_limit_comparison_preserves_unsigned_high_bits_and_signed_extension(self):
+        async def go():
+            dev, sim = create_pair()
+            sim._dictionary_entries = [sim.od.variable(0x1001)]
+            metadata = sim._dictionary_metadata
+            sim._dictionary_metadata = lambda sub: (0x1FF).to_bytes(4, "little") if sub == 8 else metadata(sub)
+            async with dev, sim:
+                report = await dev.discover_dictionary()
+                mismatch, = report["metadata_mismatches"]
+                self.assertEqual(set(mismatch["differences"]), {"high_limit_raw"})
+                sim._dictionary_entries = [sim.od.variable((0x2870, 3))]
+                for low in (0x00008000, 0xFFFF8000):
+                    sim._dictionary_metadata = lambda sub: low.to_bytes(4, "little") if sub == 7 else metadata(sub)
+                    self.assertEqual((await dev.discover_dictionary())["metadata_mismatches"], [])
+                sim._dictionary_metadata = lambda sub: (0x12348000).to_bytes(4, "little") if sub == 7 else metadata(sub)
+                mismatch, = (await dev.discover_dictionary())["metadata_mismatches"]
+                self.assertEqual(set(mismatch["differences"]), {"low_limit_raw"})
+        asyncio.run(go())
+
     def test_ignored_cursor_or_reserved_address_cannot_claim_complete_scan(self):
         async def go():
             dev, sim = create_pair()
