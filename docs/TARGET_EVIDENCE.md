@@ -24,6 +24,17 @@ The selected EDS declares product `0x07055037`, so both reports correctly
 record a product mismatch. Matching vendor and revision do not establish
 that every parameter definition matches this controller.
 
+The Engineering dump reads the configured node id at `5900h:1` as 1.
+With the same controller and its existing SocketCAN adapter configuration,
+the next enumeration command is:
+
+```sh
+sevcon-can --channel can0 --node 1 discover --json > installed-dictionary.json
+```
+
+Use the actual adapter channel if it differs. This selects metadata rows
+without changing motor parameters or NMT state.
+
 ## Scan results
 
 | Observation | First dump | Second dump |
