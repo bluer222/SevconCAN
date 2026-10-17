@@ -3,8 +3,8 @@
 The implementation targets documented Gen4 CANopen services and the supplied
 object dictionary. The public manual and a part number cannot identify the
 firmware, customer passwords or motor configuration installed in a particular
-unit. Two existing user-provided physical value dumps were reviewed offline;
-no new controller commands were issued during this work.
+unit. Two user-provided physical value dumps and a full installed-dictionary
+export were reviewed offline. This review issued no controller commands.
 
 ## Current completeness result
 
@@ -18,12 +18,12 @@ The default dictionary remains the original 1,340 entries. The explicit
 `--supplemental` selection provides 89 additional source-backed definitions,
 including `291Fh` creep torque. It never replaces a baseline definition.
 
-The [coverage audit](COVERAGE.md) accounts for 358 explicit index/subindex
+The global [coverage audit](COVERAGE.md) accounts for 358 explicit index/subindex
 references: 300 baseline schemas, 10 optional schemas, 14 address boundaries
-and 34 unresolved references. Zero references are unreviewed. This is not
-full controller completeness. Unknown parameter formats are still open,
-and lexical coverage does not prove that all prose or proprietary services
-have been implemented.
+and 34 unresolved references. Zero references are unreviewed. All 34 unresolved
+references are absent from the actual target's table. They remain unknown
+schemas for other firmware. Lexical and object coverage do not prove that all
+prose or proprietary services have been implemented.
 
 `python conformance/run.py --interop` checks software correctness, source
 pinning and coverage freshness. Add `--require-complete` to make unresolved
@@ -34,13 +34,36 @@ software `0705.0013`, and PMAC firmware. Its Engineering value dump contains
 1,328 successful reads, three access-level aborts and nine write-only skips.
 A `5630h` enumeration of the target found the same 1,340 addresses as the
 bundled EDS, with matching data type, access, PDO mapping and object version
-on every row. The 169 limits it reports also match. None of the supplement
-entries, including creep torque, are installed. See
+on every row. The 169 limits it reports also match; 1,171 zero pairs leave
+limits unverified. None of the supplement entries, including creep torque,
+are installed. See
 [target evidence](TARGET_EVIDENCE.md).
 
 `sevcon-can --channel can0 --node <id> discover --json` repeats this check
 for another controller. It writes only the metadata cursor and cannot
 supply unknown names or scaling.
+
+`python conformance/run.py --interop --installed installed-dictionary.json`
+also verifies the existing export without CAN I/O. It recomputes comparisons
+from raw rows, rejects incomplete or malformed scans, and reports zero target
+object/schema gaps. The export itself contains no identity, so association
+with this controller relies on the supplied capture context. The EDS product
+header mismatch remains visible.
+
+Structured diagnostic readers now cover both FIFO logs, all ten event
+counters and all twelve values in each customer/Sevcon min/max monitor.
+Selectors and explicit resets are serialized per device. No read clears a
+log. Logout accepts the observed login-failed abort only after a successful
+fresh read of access level zero; transport failures cannot report success.
+
+Full function completeness remains open. The installed `5400h` bootloader
+trigger is accessible through typed/raw SDO, but firmware image parsing and
+erase/program/verify transfers are unimplemented. The reviewed manufacturer
+DVT tutorial names host commands without defining their CAN or file format.
+`5640h` command semantics and `5600h` binary log layouts are also unspecified
+in the available sources. Their generic raw access does not implement those
+workflows. Further firmware work needs the matching Sevcon bootloader
+application note, DVT scripts or a verified protocol capture.
 
 ## Coverage
 
@@ -50,7 +73,7 @@ supply unknown names or scaling.
 | Jhoinrch connection | Candlelight through Linux SocketCAN or direct gs_usb; SLCAN through serial | Requires compatible observed firmware; model name alone is insufficient |
 | SDO | Expedited, segmented, block upload/download, CRC, retransmission, aborts, per-transfer timeouts and cancellation | EDS COMMS_TIMEOUT honored; independent exchanges including loss; target dumps include a 9,488-byte upload |
 | Object dictionary | EDS/DCF parser, raw access, scaling, labels, limits, bitfields, optional supplement and login permissions | Exact custom EDS supported; supplements remain firmware dependent; names, labels and bitfields searchable |
-| Installed dictionary discovery | Bounded `5630h` enumeration, resume, missing/absent entries and schema differences | Full scan of the target matches the bundled EDS; `0..0` limits mean no stored range; duplicate/zero addresses rejected; no invented names or scaling |
+| Installed dictionary discovery | Bounded `5630h` enumeration, resume, missing/absent entries, schema differences and offline export gate | Full target scan matches baseline addresses and reported metadata; `0..0` limits remain unverified; duplicate/zero addresses rejected; no invented names or scaling |
 | NMT | Start/stop/pre-operational/reset; heartbeat monitor; bounded state polling | Simulator and independent stack tests |
 | EMCY | Error register and Sevcon fault decoding; explicit/live `1014h` identifiers | Standard/extended identifiers; CLI follows live configuration; independent producer test |
 | PDO | Five live records, TPDO subscriptions/RTR requests, types 252/253, RPDO sends, dummy mappings and remapping | Pre-operational and EDS restrictions enforced; fifth PDO needs configured identifier; extended support depends on firmware |
@@ -59,9 +82,10 @@ supply unknown names or scaling.
 | Drive control | State-based enable, mode selection, quick stop/disable commands and reset edges | Does not commission vehicle application, motor or contactors |
 | Encoder | Reads EDS-defined 4630h/6090h values; typed writes available | No automatic Sin/Cos alignment or invented firmware subindices |
 | Parameters | Save/default-restore signatures; JSON raw snapshots; selected restore with preflight and read-back | Selected restore is sequential, not atomic, and never saves implicitly |
-| User interfaces | CLI metadata search/describe, installed dictionary scan, monitor, shell and searchable browser GUI | Exact/optional dictionary selection, visible provenance, binary hex access; dumps retain errors and cancellation |
+| Diagnostic logs | Both FIFO logs, all ten event counters, customer/Sevcon min/max monitors, explicit selective resets | Pinned OVMS procedures and installed EDS; operating timestamps and three raw data bytes retained; level-5 lifetime reset enforced; domain logs remain raw |
+| User interfaces | CLI metadata search/describe, installed dictionary scan, diagnostic logs, monitor, shell and searchable browser GUI | Exact/optional dictionary selection, visible provenance, binary hex access; dumps retain errors and cancellation |
 | Firmware update | Not implemented | No verified Gen4 .dld/.dldx transport/file format available in the reviewed evidence |
-| Proprietary DVT functions | Not implemented | No claim of full DVT compatibility |
+| Proprietary DVT command channel | Raw `5640h` access only | Command vocabulary and response semantics unverified; no claim of full DVT compatibility |
 | LSS | Not implemented | Bundled EDS explicitly declares LSS_Supported=0 |
 
 ## Dictionary and credentials
@@ -111,7 +135,7 @@ firmware behavior.
 Install the project with its `dev` extra and run:
 
 ```sh
-python conformance/run.py --interop
+python conformance/run.py --interop --installed installed-dictionary.json
 ```
 
 This checks pinned specifications, generated tables, unit/integration tests,
@@ -120,15 +144,16 @@ independent gate fails explicitly if its dependencies are missing. Core-only
 installations can run `python conformance/run.py`; optional backend tests may
 be skipped when their dependencies are absent, and the output reports that.
 
-Recorded on 2026-10-16 with Python 3.14.7, python-can 4.6.1 and canopen 2.4.1:
-**240 tests passed with zero skips; 17 independent interoperability checks
+Recorded on 2026-10-17 with Python 3.14.7, python-can 4.6.1 and canopen 2.4.1:
+**262 tests passed with zero skips; 17 independent interoperability checks
 passed.** Pinned source hashes, generated tables, optional dictionary
-freshness and coverage-accounting checks passed. The strict coverage check
-returned failure for its 34 unresolved references, as intended. GUI HTTP
-tests and a headless-browser check verified optional parameter search,
-source labels, watch/write flows and binary values without JavaScript errors.
+freshness, coverage-accounting and installed-export checks passed. The strict
+coverage check returned failure for its 34 unresolved references, as intended. GUI HTTP
+tests passed in this run. An earlier headless-browser check verified optional
+parameter search, source labels, watch/write flows and binary values without
+JavaScript errors.
 
-Before a later hardware acceptance run, establish the exact Jhoinrch model,
-firmware, host driver, node id, CAN bitrate, credentials and controller EDS.
-The work completed here does not require that run, but physical compatibility
-must remain an open claim until it is performed.
+The supplied captures establish node 1 at 500 kbit/s and report the installed
+dictionary above. A later hardware acceptance run still needs the adapter's
+firmware/driver details, suitable credentials and a controlled vehicle setup.
+Motor-control writes and physical timing remain unverified.

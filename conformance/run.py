@@ -30,6 +30,8 @@ def main() -> int:
                         help="also require the independent canopen/python-can gate")
     parser.add_argument("--require-complete", action="store_true",
                         help="also fail on documented functions with unresolved definitions")
+    parser.add_argument("--installed", type=Path,
+                        help="also audit target OD coverage from an existing discovery JSON export")
     args = parser.parse_args()
     failures = 0
 
@@ -51,6 +53,11 @@ def main() -> int:
         coverage_args.append("--require-complete")
     if run(*coverage_args) != 0:
         failures += 1
+
+    if args.installed:
+        print("== installed controller dictionary coverage ==")
+        if run("tools/audit_installed.py", str(args.installed.resolve())) != 0:
+            failures += 1
 
     print("== test suite ==")
     if run("-m", "unittest", "discover", "-s", "tests") != 0:

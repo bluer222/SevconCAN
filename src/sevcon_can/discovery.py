@@ -8,11 +8,11 @@ No parameter values, names, scaling or login levels are inferred from it.
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass
-from typing import Any, AsyncIterator, Dict, Optional
+from typing import Any, AsyncIterator, Dict, Optional, Sequence
 
 from . import datatypes as dt
 from .exceptions import ObjectDictionaryError, ProtocolError, SdoAbortError
-from .od import parse_int
+from .od import ObjectDictionary, parse_int
 from .sdo import ABORT_NO_SUBINDEX
 
 # Labels of 5630h:5 in the supplied Gen4 EDS.
@@ -32,7 +32,7 @@ class DictionaryEntry:
 
     Limits are unsigned 32-bit wire values. They are not decoded as signed
     values or physical units, and flags are not interpreted as permissions.
-    A 0..0 pair means the controller table stores no range for the entry.
+    A 0..0 pair does not establish a usable range for the entry.
     Unknown internal type/access codes remain available without guessing.
     """
 
@@ -136,12 +136,34 @@ async def discover_dictionary(device, *, start: int = 0,
     count = await _uint(device, 1, 2)
     entries = [entry.to_dict() async for entry in _entries(device, count, start, limit)]
     complete = start == 0 and len(entries) == count
+    return {"entry_count": count, "start": start, "complete": complete,
+            **compare_dictionary(device.od, entries, complete=complete)}
+
+
+def compare_dictionary(od: ObjectDictionary, entries: Sequence[Dict[str, Any]], *,
+                       complete: bool) -> Dict[str, Any]:
+    """Compare raw table metadata with an EDS, recomputing derived fields.
+
+    Callers validate table bounds and row integrity before comparison. Cached
+    paths, decoded types and previous mismatch summaries are not evidence.
+    A zero limit pair is unavailable or ambiguous, not proof of no limits.
+    """
+    normalized = []
+    for raw in entries:
+        try:
+            path = od.variable(raw["index"], raw["subindex"]).path
+        except ObjectDictionaryError:
+            path = None
+        fields = {name: raw[name] for name in DictionaryEntry.__dataclass_fields__
+                  if name != "dictionary_path"}
+        normalized.append(DictionaryEntry(**fields, dictionary_path=path).to_dict())
+    entries = normalized
     installed = {(entry["index"], entry["subindex"]) for entry in entries}
     mismatches = []
     for entry in entries:
         if entry["dictionary_path"] is None:
             continue
-        var = device.variable(entry["index"], entry["subindex"])
+        var = od.variable(entry["index"], entry["subindex"])
         differences = {}
         expected_access = "rw" if var.access in ("rwr", "rww") else var.access
         expected = {"data_type": var.data_type, "access": expected_access,
@@ -153,8 +175,8 @@ async def discover_dictionary(device, *, start: int = 0,
                 differences[name] = {"dictionary": value, "controller": entry[name]}
         limits = (("low_limit_raw", var.low), ("high_limit_raw", var.high))
         if entry["low_limit_raw"] == entry["high_limit_raw"] == 0:
-            # Gen4 reports 0..0 for rows without a stored range, even constants
-            # holding nonzero values, so this pair cannot disagree with the EDS.
+            # Constants holding nonzero values also report this pair. Preserve
+            # it as ambiguous metadata rather than validating a zero-only range.
             limits = ()
         for name, limit_value in limits:
             if limit_value is None:
@@ -176,12 +198,14 @@ async def discover_dictionary(device, *, start: int = 0,
         if differences:
             mismatches.append({"index": entry["index"], "subindex": entry["subindex"],
                                "dictionary_path": var.path, "differences": differences})
-    return {"entry_count": count, "start": start,
-            "complete": complete,
-            "entries": entries,
+    unreported = sum(entry["low_limit_raw"] == entry["high_limit_raw"] == 0
+                     for entry in entries)
+    return {"entries": entries,
+            "limit_summary": {"reported": len(entries) - unreported,
+                              "unreported_or_ambiguous": unreported},
             "missing_from_dictionary": [entry for entry in entries
                                         if entry["dictionary_path"] is None],
             "metadata_mismatches": mismatches,
             "absent_from_controller": [
                 {"index": var.index, "subindex": var.subindex, "dictionary_path": var.path}
-                for var in device.od.variables() if var.key not in installed] if complete else None}
+                for var in od.variables() if var.key not in installed] if complete else None}

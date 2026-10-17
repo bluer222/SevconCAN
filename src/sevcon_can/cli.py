@@ -133,6 +133,14 @@ def build_parser() -> argparse.ArgumentParser:
     sub.add_parser("operational", help="restore operational via 2800h")
     sub.add_parser("store", help="persist parameters (1010h)")
     sub.add_parser("faults", help="list active faults via 5300h/5610h")
+    log_kinds = ["system", "faults", "events", "customer", "sevcon"]
+    p = sub.add_parser("logs", help="read diagnostic FIFO, counters or min/max values without clearing")
+    p.add_argument("kind", choices=log_kinds)
+    p.add_argument("--start", type=int, default=0, help="first FIFO/counter position")
+    p.add_argument("--limit", type=int, help="maximum FIFO/counter entries; default reads all")
+    p.add_argument("--json", action="store_true")
+    p = sub.add_parser("reset-log", help="explicitly clear a diagnostic log; login rules apply")
+    p.add_argument("kind", choices=log_kinds)
     sub.add_parser("drive", help="print statusword state")
     p = sub.add_parser("drive-command", help="write a 402 command to 6040h")
     p.add_argument("name", help="e.g. 'Enable operation', 'Fault reset'")
@@ -363,6 +371,41 @@ async def _run(args, dev: AsyncSevconGen4) -> int:
         return 0
     if args.command == "pdo-config":
         print(await dev.read_pdo_configuration(args.direction == "tpdo", args.number))
+        return 0
+    if args.command == "reset-log":
+        await dev.reset_diagnostic_log(args.kind)
+        print(f"{args.kind} log reset")
+        return 0
+    if args.command == "logs":
+        if args.kind in ("customer", "sevcon"):
+            if args.start != 0 or args.limit is not None:
+                raise ValueError("min/max monitors do not use --start or --limit")
+            readings = await dev.operational_monitor(sevcon=args.kind == "sevcon")
+            if args.json:
+                print(json.dumps({name: {"raw": r.raw, "physical": r.physical, "unit": r.unit}
+                                  for name, r in readings.items()}, indent=2))
+            else:
+                for name, reading in readings.items():
+                    print(f"{name}: {reading.physical} {reading.unit or ''}".rstrip())
+            return 0
+        if args.kind == "events":
+            rows = await dev.event_counters(start=args.start, limit=args.limit)
+        else:
+            rows = await dev.fifo_log(args.kind, start=args.start, limit=args.limit)
+        values = []
+        for row in rows:
+            value = asdict(row)
+            for name in ("timestamp", "first", "last"):
+                if name in value:
+                    value[name]["elapsed_seconds"] = getattr(row, name).elapsed_seconds
+            if "data" in value:
+                value["data_hex"] = value.pop("data").hex()
+            values.append(value)
+        if args.json:
+            print(json.dumps(values, indent=2))
+        else:
+            for value in values:
+                print(value)
         return 0
     if args.command == "read-raw":
         print((await dev.read_raw(args.index, args.sub)).hex(" "))

@@ -33,6 +33,10 @@ from .exceptions import (
     TransportError,
 )
 from .faults import by_level, led_category, lookup as fault_lookup, search as fault_search
+from .logs import (
+    EventCounter, FifoLogEntry, LogTimestamp, read_event_counters, read_fifo_log,
+    read_operational_monitor, reset_diagnostic_log,
+)
 from .network import FrameQueue, Network, Subscription
 from .nmt import (
     HeartbeatMonitor,
@@ -81,6 +85,8 @@ __all__ = [
     "decode_state", "describe_status", "command_bits", "command_names",
     "operation_mode_to_raw", "operation_mode_from_raw",
     "fault_lookup", "fault_search", "by_level", "led_category",
+    "EventCounter", "FifoLogEntry", "LogTimestamp", "read_event_counters", "read_fifo_log",
+    "read_operational_monitor", "reset_diagnostic_log",
     "SimulatedGen4", "create_pair",
     "SevconError", "TransportError", "TimeoutError", "ProtocolError",
     "ObjectDictionaryError", "AccessError", "SdoAbortError", "StateError",

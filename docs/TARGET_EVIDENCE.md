@@ -25,8 +25,8 @@ record a product mismatch. Matching vendor and revision do not establish
 that every parameter definition matches this controller.
 
 The Engineering dump reads the configured node id at `5900h:1` as 1.
-With the same controller and its existing SocketCAN adapter configuration,
-the next enumeration command is:
+To repeat enumeration with the same controller and its existing SocketCAN
+adapter configuration:
 
 ```sh
 sevcon-can --channel can0 --node 1 discover --json > installed-dictionary.json
@@ -54,16 +54,28 @@ distinguishes record members or carries the EDS `ObjFlags`.
 
 Limits are reported for 169 rows, all writable configuration entries, and
 each agrees with the EDS. The other 1171 rows read `0..0`. This includes
-constants holding nonzero values, such as `1018h:1`, so the pair means the
-table stores no range for the row. Reported limits also occur on
-Engineering-level entries while not logged in, so the omission is not an
-access restriction. A repeat scan logged in at Engineering level 4, user ID
-0, returned identical rows. Discovery no longer reports these pairs as metadata
-mismatches. The firmware may still range-check writes to such rows.
+constants holding nonzero values, such as `1018h:1`, so the pair cannot
+establish a usable range. Reported limits also occur on Engineering-level
+entries while not logged in. The capture notes report identical rows on a
+repeat scan at Engineering level 4, user ID 0. These observations do not
+establish that every missing range is unrestricted. Discovery retains the
+zero pairs as unreported or ambiguous and excludes them from limit
+verification. The firmware may still range-check writes to such rows.
+
+The export's stored list of 1,152 metadata mismatches predates this fix.
+`python tools/audit_installed.py installed-dictionary.json` validates the raw
+row sequence and recomputes all comparisons, ignoring old summaries, paths
+and decoded metadata. It reports zero address/schema disagreements, 169
+reported limit pairs and 1,171 unreported or ambiguous pairs. The original
+export remains unchanged. It contains no controller identity, so the
+association with this unit depends on the supplied capture context and the
+value dumps above.
 
 Logging out by writing user ID 0 and then password 0 aborts the password
 write with `08000000h`, Gen4 reason 9, login failed. `5000h:1` nevertheless
-reads 0 afterwards. `logout()` accepts that abort only when the level reads 0.
+reads 0 afterwards. `logout()` accepts only this specific abort after a fresh
+level-zero read. Other aborts and failed verification reads propagate; a
+successful password write also requires a fresh level-zero verification.
 
 No entry from `Gen4-supplement.eds` is installed. Direct reads return
 `06020000h` for `291Fh`, `607Eh`, `2905h` and `6410h`, and `06090011h` for

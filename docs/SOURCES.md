@@ -52,7 +52,7 @@ Conflicting definitions must be selected through a matching custom dictionary.
 | --- | --- |
 | `specs/extra/ovms-rt_sevcon.cpp` | login sequence (`5000h:3`=0, `5000h:2`=`0x4BDF` → level 4), NMT state via `5110h` |
 | `specs/extra/ovms-rt_sevcon.h` | known product codes (`1018h:2`) |
-| `specs/extra/ovms-rt_sevcon_faults.cpp` | fault table + EMCY fault-id byte offsets |
+| `specs/extra/ovms-rt_sevcon_faults.cpp` | fault table, EMCY fault-id byte offsets, scalar FIFO selection/count/timestamps, event counters and selective log resets; min/max fields cross-checked with the installed EDS |
 | `specs/extra/victron-sevcon.c` | fault table + EMCY decoding (`mdata[3]\|mdata[4]<<8`) |
 | `specs/extra/victron-sevcon_gen4.py` | `5100h` 0.0625 scaling, EMCY example |
 | `specs/extra/ovms-dcf-download.pl` | [OVMS implementation](https://github.com/openvehicles/Open-Vehicle-Server/blob/master/clients/diagmode/dcf_download.pl) of zero-based `5630h` enumeration and internal datatype/access codes |

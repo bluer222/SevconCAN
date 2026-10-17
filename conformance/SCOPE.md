@@ -21,7 +21,10 @@ certification or a hardware acceptance test.
    installed dictionary metadata/integrity, live EMCY identifiers, RTR TPDOs,
    RPDO padding, per-object timeouts and shutdown/state-cache behavior.
    Concurrent fault selection and canonical signed/unsigned metadata-limit
-   comparisons have separate regressions.
+   comparisons have separate regressions. Diagnostic-log tests cover complete
+   FIFO iteration, selector/reset serialization, all event counters and both
+   twelve-field min/max monitors. Logout tests require fresh level-zero
+   verification and propagate verification failures.
 4. With the optional backend dependencies installed, real python-can virtual
    backends and pyserial SLCAN loopback exercise frame conversion, remote
    DLC, error payloads, serial parsing, receiver failures and resource cleanup.
@@ -30,6 +33,13 @@ certification or a hardware acceptance test.
    bus, in both client/server directions. Checks include expedited and
    segmented SDO, block-upload fallback, CRC block transfers, injected lost
    segments, NMT/heartbeat and EMCY.
+6. `--installed PATH` additionally checks an existing `5630h` JSON export
+   offline. It validates row bounds, sequence and unique addresses, then
+   compares raw metadata with the baseline EDS. Cached derived fields and
+   mismatch summaries are ignored. A complete scan with zero missing/absent
+   entries and zero schema disagreements passes. Unreported `0..0` limits
+   remain explicitly unverified. This stage does not verify identity,
+   scaling or hardware behavior and does not weaken `--require-complete`.
 
 The core installation can skip optional backend tests when dependencies are
 missing. Install `.[dev]` and use `--interop` for the complete software gate.
@@ -38,13 +48,15 @@ cause an explicit failure when `--interop` is requested.
 
 ## Limits
 
-- No controller or USB adapter was connected during this work. Two earlier
-  physical value dumps were reviewed; [target evidence](../docs/TARGET_EVIDENCE.md)
-  records exactly what they establish. Real electrical behavior,
-  USB enumeration/firmware, CAN bus load, drive timing and installed parameter
-  values remain unverified.
+- This offline review issued no controller or USB adapter commands. Two
+  physical value dumps and an installed-dictionary export were reviewed;
+  [target evidence](../docs/TARGET_EVIDENCE.md) records what they establish.
+  Electrical behavior, USB firmware, CAN bus load, drive timing and parameter
+  writes remain unverified.
 - Ratings tables contain the target's 36/48 V, Size 2, 275/110 A values. This
-  does not establish that the bundled EDS matches a specific 634A42203.
+  does not establish that the bundled EDS matches every 634A42203. The supplied
+  unit's complete export matches its address set and reported schema fields;
+  scaling and units still come from the EDS, and the product header differs.
 - The simulator is a protocol fixture, with limits described in
   `docs/IMPLEMENTATION_STATUS.md`. The independent stack reduces reliance on
   that fixture but does not supply physical validation.
@@ -54,7 +66,9 @@ cause an explicit failure when `--interop` is requested.
   suitability for the exact installed firmware.
 - The audit currently retains 34 unresolved index/subindex references. Run
   `python conformance/run.py --interop --require-complete` to fail on these
-  known gaps. The normal software gate does not claim controller completeness.
+  known gaps. None is installed in the supplied target export. Firmware
+  programming, proprietary command semantics and domain-log decoding remain
+  open even when the target object-dictionary gate passes.
 
 ## Acceptance
 

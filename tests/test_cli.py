@@ -90,6 +90,58 @@ class TestShell(unittest.TestCase):
 
 
 class TestCommands(unittest.TestCase):
+    def test_fifo_json_preserves_times_and_binary_data(self):
+        import io
+        import json
+        from contextlib import redirect_stdout
+        from unittest.mock import AsyncMock, MagicMock
+        from sevcon_can.cli import _run, build_parser
+        from sevcon_can import FifoLogEntry, LogTimestamp
+
+        async def go():
+            dev = MagicMock()
+            dev.fifo_log = AsyncMock(return_value=[
+                FifoLogEntry(1, 0x4581, LogTimestamp(2, 3), b"\x00\x0a\xff")])
+            args = build_parser().parse_args(
+                ["logs", "faults", "--start", "1", "--limit", "2", "--json"])
+            out = io.StringIO()
+            with redirect_stdout(out):
+                self.assertEqual(await _run(args, dev), 0)
+            dev.fifo_log.assert_awaited_once_with("faults", start=1, limit=2)
+            row, = json.loads(out.getvalue())
+            self.assertEqual(row["data_hex"], "000aff")
+            self.assertEqual(row["timestamp"],
+                             {"hours": 2, "quarter_minutes": 3, "elapsed_seconds": 7245})
+        run(go())
+
+    def test_counter_and_monitor_json(self):
+        import json
+        rc, text = self.invoke(["logs", "events", "--start", "8", "--json"])
+        self.assertEqual(rc, 0, text)
+        counters = json.loads(text)
+        self.assertEqual([row["position"] for row in counters], [8, 9])
+        self.assertIn("elapsed_seconds", counters[0]["first"])
+        for kind in ("customer", "sevcon"):
+            rc, text = self.invoke(["logs", kind, "--json"])
+            self.assertEqual(rc, 0, text)
+            readings = json.loads(text)
+            self.assertEqual(len(readings), 12)
+            self.assertEqual(readings["Minimum Battery Voltage"]["unit"], "V")
+            self.assertIn("Minimum Motor Current 2", readings)
+
+    def test_log_reset_requires_explicit_authorization(self):
+        rc, text = self.invoke(["reset-log", "system"])
+        self.assertEqual(rc, 1, text)
+        self.assertIn("login level", text)
+        rc, text = self.invoke(["--password", "0x4BDF", "reset-log", "system"])
+        self.assertEqual(rc, 0, text)
+        self.assertIn("system log reset", text)
+
+    def test_monitor_does_not_silently_ignore_pagination(self):
+        rc, text = self.invoke(["logs", "customer", "--limit", "1"])
+        self.assertEqual(rc, 1, text)
+        self.assertIn("do not use --start or --limit", text)
+
     def test_emcy_uses_live_identifier_and_closes_subscription(self):
         import io
         from contextlib import redirect_stdout

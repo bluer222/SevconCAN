@@ -129,6 +129,7 @@ class AsyncSevconGen4:
         self._dictionary_lock = asyncio.Lock()
         self._fault_list_lock = asyncio.Lock()
         self._fault_text_lock = asyncio.Lock()
+        self._diagnostic_log_lock = asyncio.Lock()
         self._hb_sub = network.subscribe(
             _nmt.HEARTBEAT_BASE + node_id, self._on_heartbeat)
 
@@ -409,12 +410,19 @@ class AsyncSevconGen4:
 
     # ---- login ----
     async def access_level(self, cached: bool = True) -> Optional[int]:
-        """Current Sevcon login level (``5000h:1``), cached after login."""
+        """Current Sevcon login level (``5000h:1``), cached after login.
+
+        ``cached=False`` requires a fresh read and propagates read failures.
+        """
         if cached and self._access_level is not None:
             return self._access_level
+        if not cached:
+            self._access_level = None
         try:
             level = int(await self.read_physical(0x5000, 1))
         except Exception:
+            if not cached:
+                raise
             return self._access_level
         self._access_level = level
         return level
@@ -443,22 +451,26 @@ class AsyncSevconGen4:
     async def logout(self) -> int:
         """Log out (user id and password 0) and return the level (expect 0).
 
-        Gen4 aborts the zero password as a failed login (reason 9) while
-        still logging out, so that abort is raised only if a level remains.
+        The target firmware aborts the zero password with login-failed reason
+        9 while logging out. Accept that abort only after a fresh level-zero
+        read; other aborts and verification failures propagate.
         """
         self._check_open()
         var_pwd = self.variable((0x5000, 2))
         var_uid = self.variable((0x5000, 3))
         await self.write_raw(var_uid.index, var_uid.subindex, var_uid.encode_raw(0))
+        self._access_level = None
         try:
             await self.write_raw(var_pwd.index, var_pwd.subindex, var_pwd.encode_raw(0))
-        except SdoAbortError:
-            self._access_level = None
-            if await self.access_level(cached=False):
+        except SdoAbortError as error:
+            if (error.code != ABORT_GENERAL or error.sevcon_reason != 9 or
+                    await self.access_level(cached=False) != 0):
                 raise
             return 0
-        self._access_level = None
-        return await self.access_level(cached=False) or 0
+        level = await self.access_level(cached=False)
+        if level != 0:
+            raise StateError(f"logout failed: controller stayed logged in (level {level})")
+        return 0
 
     # ---- NMT / state ----
     def _on_heartbeat(self, frame: CanFrame) -> None:
@@ -828,6 +840,28 @@ class AsyncSevconGen4:
     async def active_faults(self) -> list:
         from . import faults as _faults
         return await _faults.read_active_faults(self)
+
+    async def fifo_log(self, kind: str = "system", *, start: int = 0,
+                       limit: Optional[int] = None) -> list:
+        """Read system/fault FIFO entries without clearing them."""
+        from .logs import read_fifo_log
+        return await read_fifo_log(self, kind, start=start, limit=limit)
+
+    async def event_counters(self, *, start: int = 0,
+                             limit: Optional[int] = None) -> list:
+        """Read event-counter IDs, first/last times and counts."""
+        from .logs import read_event_counters
+        return await read_event_counters(self, start=start, limit=limit)
+
+    async def operational_monitor(self, *, sevcon: bool = False) -> Dict[str, Reading]:
+        """Read customer or Sevcon lifetime min/max values and their units."""
+        from .logs import read_operational_monitor
+        return await read_operational_monitor(self, sevcon=sevcon)
+
+    async def reset_diagnostic_log(self, kind: str) -> None:
+        """Explicitly clear one diagnostic log, subject to controller access."""
+        from .logs import reset_diagnostic_log
+        await reset_diagnostic_log(self, kind)
 
     # ---- CANopen housekeeping ----
     async def producer_heartbeat(self, period_ms: int) -> None:

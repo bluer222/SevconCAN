@@ -8,8 +8,10 @@ exact dictionary installed on every 634A42203.
 The library implements parameter access, drive commands, faults, live PDO
 configuration, RPDO transmission, heartbeat monitoring and SYNC. Offline
 validation includes fault injection and exchanges with an independent
-CANopen stack. Two user-supplied physical value dumps also support SDO read
-compatibility with firmware `0705.0013`; see [target evidence](docs/TARGET_EVIDENCE.md).
+CANopen stack. Two user-supplied physical value dumps support SDO read
+compatibility with firmware `0705.0013`. A full installed-dictionary export
+matches all 1,340 baseline addresses and their reported schema metadata;
+see [target evidence](docs/TARGET_EVIDENCE.md).
 Adapter behavior and motor-control writes remain unverified. This is not a
 replacement for every proprietary DVT service.
 See [implementation status](docs/IMPLEMENTATION_STATUS.md) for coverage and
@@ -126,8 +128,44 @@ raw `50`; its documented range is `0.0` to `0.5`. For an offline round trip:
 sevcon-can --sim --supplemental --password 0x4BDF write CREEP_TORQUE 0 0.05
 ```
 
-This validates the client codec. Your existing dumps did not request `291Fh`,
-so they do not establish whether that firmware implements creep torque.
+This validates the client codec for firmware that provides this parameter.
+The target's installed-dictionary scan excludes `291Fh`, and a direct read
+returned object-not-found. Native creep torque through this object is absent
+on firmware `0705.0013` in this unit. None of the 89 supplemental entries is
+installed, so use the baseline dictionary for this controller.
+
+## Diagnostic logs
+
+System and fault FIFO readers preserve event IDs, all three event-data bytes
+and controller operating timestamps. Event counters include all ten slots,
+their counts and first/last timestamps. Customer and Sevcon min/max monitors
+include both motor-current channels and retain the dictionary's units.
+
+```python
+rows = await dev.fifo_log("faults")
+counters = await dev.event_counters()
+monitor = await dev.operational_monitor()
+```
+
+```sh
+sevcon-can --channel can0 --node 1 logs faults --start 0 --limit 20 --json
+sevcon-can --channel can0 --node 1 logs events --json
+sevcon-can --channel can0 --node 1 logs customer --json
+```
+
+FIFO reads select positions but do not clear logs. Without `--limit`, FIFO
+and counter commands read all rows. Timestamps count operating hours plus
+quarter minutes, not UTC. JSON also includes elapsed seconds. Calls sharing
+a device serialize selectors and resets; new controller events can still
+change a FIFO during a scan. Login restrictions apply to selector writes.
+
+`await dev.reset_diagnostic_log(kind)` or `reset-log KIND` explicitly clears
+one of `system`, `faults`, `events`, `customer` or `sevcon`. It enforces the
+selected dictionary's access rules without an implicit login, state change
+or store. Clearing the Sevcon lifetime monitor requires level 5 in the
+baseline EDS. Clearing a log does not clear active faults. These helpers use
+the scalar `4100h` through `4301h` records; `5600h` binary domain-log layouts
+remain undecoded.
 
 ## Importable parameter dictionaries
 
@@ -332,6 +370,7 @@ parameter writes and includes monitoring values as well as configuration.
 ```sh
 python -m pip install '.[dev]'
 python conformance/run.py --interop
+python conformance/run.py --interop --installed installed-dictionary.json
 python examples/async_log.py --sim
 python examples/async_control.py --sim
 ```
@@ -341,15 +380,25 @@ suite and independent `canopen`/`python-can` interoperability over a virtual
 bus. Tests cover protocol loss and malformed frames, block transfer CRC and
 retransmission, live PDO changes, drive-state transitions, adapter conversions,
 serial protocol parsing, configuration restore failures and GUI shutdown.
-These checks cannot verify electrical signaling, USB firmware, real bus
-load, or the parameters installed in your controller.
+The optional `--installed` stage reads an existing discovery export without
+CAN I/O. It validates row integrity and recomputes address/schema comparisons
+from raw fields, ignoring cached mismatch lists. Run
+`python tools/audit_installed.py installed-dictionary.json --json` for its
+standalone report. The target export passes with zero missing definitions
+or metadata disagreements. Its 169 reported limit pairs agree; 1,171 `0..0`
+pairs leave limits unverified. The export does not establish identity,
+scaling or behavior. Software checks cannot verify electrical signaling,
+USB firmware or real bus load.
 
 The coverage audit accounts for every explicit address found in the pinned
 manufacturer texts. Run `python conformance/run.py --interop --require-complete`
 to additionally fail while a reviewed reference lacks a verified schema.
 It currently reports 34 unresolved references, listed with evidence in
-[the coverage report](docs/COVERAGE.md). Passing the ordinary software gate
-does not mean those gaps are closed.
+[the coverage report](docs/COVERAGE.md). None occurs in the target's installed
+table. They remain unresolved for other firmware, and the global strict
+gate still fails. Passing the target dictionary check establishes object
+coverage for the export; firmware flashing, proprietary command semantics
+and hardware behavior remain outside that result.
 
 Sources and firmware ambiguities are documented in [sources](docs/SOURCES.md)
 and [specification exceptions](docs/SPEC_EXCEPTIONS.md). Generated

@@ -29,6 +29,7 @@ class TestLogin(unittest.TestCase):
 
             def keep_level(index, subindex, data):
                 if (index, subindex) == (0x5000, 2) and not any(data):
+                    sim._store[(0x5310, 0)] = b"\x09\x00"
                     raise SdoAbortError(0x08000000, index, subindex)
                 write(index, subindex, data)
 
@@ -38,6 +39,70 @@ class TestLogin(unittest.TestCase):
                 with self.assertRaises(SdoAbortError):
                     await dev.logout()
                 self.assertEqual(await dev.access_level(), 4)
+        run(go())
+
+    def test_fresh_access_level_failure_cannot_reuse_cached_login(self):
+        async def go():
+            from unittest.mock import AsyncMock
+            from sevcon_can.exceptions import TransportError
+            dev, sim = create_pair()
+            async with dev, sim:
+                await dev.login(SIM_PASSWORD)
+                dev.read_physical = AsyncMock(side_effect=TransportError("read unavailable"))
+                with self.assertRaises(TransportError):
+                    await dev.access_level(cached=False)
+                self.assertIsNone(dev._access_level)
+        run(go())
+
+    def test_logout_verification_read_failure_is_not_success(self):
+        async def go():
+            from unittest.mock import AsyncMock
+            from sevcon_can.exceptions import SdoAbortError, TransportError
+            for password_aborts in (False, True):
+                dev, sim = create_pair()
+                async with dev, sim:
+                    await dev.login(SIM_PASSWORD)
+                    original = dev.write_raw
+
+                    async def write(index, sub, data):
+                        try:
+                            await original(index, sub, data)
+                        except SdoAbortError:
+                            if password_aborts:
+                                raise
+
+                    dev.write_raw = write
+                    dev.read_physical = AsyncMock(side_effect=TransportError("read unavailable"))
+                    with self.assertRaises(TransportError):
+                        await dev.logout()
+                    self.assertIsNone(dev._access_level)
+        run(go())
+
+    def test_logout_does_not_suppress_unrelated_password_abort(self):
+        async def go():
+            from unittest.mock import AsyncMock
+            from sevcon_can.exceptions import SdoAbortError
+            dev, sim = create_pair()
+            async with dev, sim:
+                dev.write_raw = AsyncMock(side_effect=[None, SdoAbortError(0x08000000, 0x5000, 2, 8)])
+                dev.access_level = AsyncMock(return_value=0)
+                with self.assertRaises(SdoAbortError):
+                    await dev.logout()
+                dev.access_level.assert_not_awaited()
+        run(go())
+
+    def test_logout_without_password_abort_requires_level_zero(self):
+        async def go():
+            from unittest.mock import AsyncMock
+            from sevcon_can.exceptions import StateError
+            dev, sim = create_pair()
+            async with dev, sim:
+                await dev.login(SIM_PASSWORD)
+                dev.write_raw = AsyncMock()
+                with self.assertRaises(StateError):
+                    await dev.logout()
+                dev.access_level = AsyncMock(return_value=0)
+                self.assertEqual(await dev.logout(), 0)
         run(go())
 
     def test_bad_password_aborts(self):
