@@ -120,7 +120,8 @@ async def reset_diagnostic_log(device, kind: str) -> None:
     """Explicitly clear one log; controller and selected EDS enforce access.
 
     Active faults are not cleared by these commands. No login, NMT transition
-    or parameter-store operation is performed implicitly.
+    or parameter-store operation is performed implicitly. Firmware may retain
+    FIFO entries above the current access level; success does not mean empty.
     """
     if kind not in _RESET:
         raise ValueError("log kind must be 'system', 'faults', 'events', 'customer' or 'sevcon'")

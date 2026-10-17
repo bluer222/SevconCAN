@@ -167,6 +167,9 @@ baseline EDS. Clearing a log does not clear active faults. These helpers use
 the scalar `4100h` through `4301h` records; `5600h` binary domain-log layouts
 remain undecoded.
 
+A successful FIFO reset can retain entries whose log level exceeds the
+current access level. Read the FIFO again to inspect what remains.
+
 ## Importable parameter dictionaries
 
 The generated `sevcon_can.object_catalog` module contains 1,429 descriptions

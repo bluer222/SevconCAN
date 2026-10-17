@@ -78,3 +78,28 @@ pinned inputs to the generated tables.
 The independent gate was exercised with `canopen` 2.4.1, `python-can` 4.6.1,
 pyserial and their virtual/serial loopback backends. USB driver packages were
 installed to verify dependency availability, but no USB hardware was opened.
+
+## Recovered isPointless archive
+
+On 2026-10-17 the user identified the unavailable public repository
+`https://github.com/isPointless/Sevcon`. GitHub's repository API and raw README
+paths returned 404. This does not distinguish deletion from a private repository.
+Software Heritage preserved a full Git visit on 2025-10-21, snapshot
+`087dce64c2da1bfea6338a47b369b6a5ab932c71`, containing revision
+[`78cd3f65594fcbbbc88cc125f4ba969c10bf69c7`](https://archive.softwareheritage.org/browse/revision/78cd3f65594fcbbbc88cc125f4ba969c10bf69c7/).
+The revision is dated 2024-02-09. It does not establish that later changes
+were preserved or that its dictionaries match firmware `0705.0013`.
+
+Recovered documents were verified against their archived Git blob IDs and
+inspected without running software. They remain local research inputs rather
+than replacements for the installed EDS.
+
+| Archived path | Git blob ID | Finding |
+| --- | --- | --- |
+| `Sevcon_Documentation/Object Dictionary FW 58_34.xlsx` | `c0e37931e58bf25d5e8ef610347b12e10d0b5c5c` | Third worksheet, N837/N850: system/fault FIFO resets remove entries only up to the current login level. N1348: `5640h:1` commands are defined in `obd_cli.tcl`; command values are not provided. |
+| `Sevcon_Documentation/Object Dictionary FW 44A.xlsx` | `352906f2d0846fdf5a97036d17657d52bdae18ba` | Third worksheet, N789/N802 corroborate selective FIFO clearing. Its domain-log definitions differ from the installed target. |
+| `Sevcon manuals /PMAC encoder commission by Sevcon DVT macros.pdf` | `bb033c8b3c10aef0cfeea591b39848b2ad434102` | Commissioning reference; does not establish the target's proprietary command numbers or binary log formats. |
+
+The archive also lists DVT installers, including `SevconDVT_Customer_TCL85.exe`
+and `SevconDVT_Customer_Online_2.exe`. Recovering and inspecting their scripts
+is a separate step; an archived filename alone does not close a protocol gap.
