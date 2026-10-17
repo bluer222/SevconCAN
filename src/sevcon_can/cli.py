@@ -139,8 +139,26 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--start", type=int, default=0, help="first FIFO/counter position")
     p.add_argument("--limit", type=int, help="maximum FIFO/counter entries; default reads all")
     p.add_argument("--json", action="store_true")
+    p.add_argument("--domain", action="store_true", help="use the verified 0705 min/max domain layout")
     p = sub.add_parser("reset-log", help="explicitly clear a diagnostic log; login rules apply")
     p.add_argument("kind", choices=log_kinds)
+    p = sub.add_parser("reset-all-logs", help="clear all diagnostics and operating hours; requires level 5")
+    p.add_argument("--timeout", type=float, default=31)
+    p = sub.add_parser("firmware-info", help="inspect a DLD/DLDx package offline")
+    p.add_argument("file", type=Path)
+    for command, help_text in (
+            ("firmware-plan", "preflight a package against an already-running Gen4 bootloader"),
+            ("firmware-program", "program a package; leaves the controller in bootloader mode")):
+        p = sub.add_parser(command, help=help_text)
+        p.add_argument("file", type=Path)
+    p = sub.add_parser("bootloader-info", help="identify a running bootloader and read section capabilities")
+    p.add_argument("--section", default="dsp-zeffer")
+    sub.add_parser("bootloader-start", help="enter bootloader mode; login and pre-op rules apply")
+    sub.add_parser("bootloader-reset", help="reset the bootloader transfer sequence")
+    p = sub.add_parser("bootloader-end", help="commit a checksum and exit bootloader mode")
+    p.add_argument("checksum", type=_node, help="expected 16-bit firmware checksum")
+    p = sub.add_parser("bootloader-read-eeprom", help="read EEPROM bytes from a running bootloader")
+    p.add_argument("file", type=Path)
     sub.add_parser("drive", help="print statusword state")
     p = sub.add_parser("drive-command", help="write a 402 command to 6040h")
     p.add_argument("name", help="e.g. 'Enable operation', 'Fault reset'")
@@ -261,6 +279,16 @@ def adapter_candidates():
 
 async def main_async(argv=None) -> int:
     args = build_parser().parse_args(argv)
+    if args.command in {"firmware-info", "firmware-plan", "firmware-program"}:
+        try:
+            from .bootloader import load_dld
+            args.firmware_image = load_dld(args.file)
+            if args.command == "firmware-info":
+                print(json.dumps(_firmware_summary(args.firmware_image), indent=2))
+                return 0
+        except (SevconError, ValueError, OSError) as error:
+            print(f"error: {error}", file=sys.stderr)
+            return 1
     if args.command in {"objects", "search", "describe"}:
         try:
             return _dictionary_command(args)
@@ -288,6 +316,14 @@ async def main_async(argv=None) -> int:
             print(f"error closing adapter: {e}", file=sys.stderr)
             result = 1
     return result
+
+
+def _firmware_summary(image) -> dict:
+    return {"source_sha256": image.source_sha256,
+            "hardware_compatibility_verified": False,
+            "sections": [{"memory_space": section.memory_space, "name": section.name,
+                          "start_address": section.start_address, "size": section.size}
+                         for section in image.sections]}
 
 
 def _dictionary_command(args) -> int:
@@ -376,18 +412,66 @@ async def _run(args, dev: AsyncSevconGen4) -> int:
         await dev.reset_diagnostic_log(args.kind)
         print(f"{args.kind} log reset")
         return 0
+    if args.command == "reset-all-logs":
+        await dev.reset_all_diagnostic_logs(timeout=args.timeout)
+        print("all diagnostic logs and operating-hour counters reset; completion flag is zero")
+        return 0
+    if args.command.startswith("bootloader-") or args.command in {"firmware-plan", "firmware-program"}:
+        from .bootloader import Gen4Bootloader
+        loader = Gen4Bootloader(dev)
+        if args.command == "bootloader-info":
+            value = {"bootloader": asdict(await loader.identify()),
+                     "capabilities": asdict(await loader.capabilities(args.section))}
+        elif args.command == "firmware-plan":
+            plan = await loader.preflight(args.firmware_image)
+            value = _firmware_summary(args.firmware_image)
+            value["plan"] = [
+                {"section": section.image.name, "capabilities": asdict(section.capabilities),
+                 "packets": len(section.packets),
+                 "bytes_to_program": sum(len(packet.data) for packet in section.packets)}
+                for section in plan.sections]
+        elif args.command == "firmware-program":
+            result = await loader.program(args.firmware_image)
+            value = {**asdict(result), "commit_checksum": result.commit_checksum,
+                     "checksum_scope": "this client's programming session"}
+        elif args.command == "bootloader-read-eeprom":
+            data = await loader.read_eeprom()
+            args.file.write_bytes(data)
+            value = {"file": str(args.file), "bytes": len(data)}
+        else:
+            if args.command == "bootloader-start":
+                await loader.start()
+            elif args.command == "bootloader-reset":
+                await loader.reset()
+            else:
+                await loader.end(args.checksum)
+            value = {"command": args.command, "request_completed": True}
+        print(json.dumps(value, indent=2))
+        return 0
     if args.command == "logs":
         if args.kind in ("customer", "sevcon"):
             if args.start != 0 or args.limit is not None:
                 raise ValueError("min/max monitors do not use --start or --limit")
-            readings = await dev.operational_monitor(sevcon=args.kind == "sevcon")
+            domain = (await dev.operational_monitor_domain(sevcon=args.kind == "sevcon")
+                      if args.domain else None)
+            readings = domain.values if domain is not None else await dev.operational_monitor(
+                sevcon=args.kind == "sevcon")
             if args.json:
-                print(json.dumps({name: {"raw": r.raw, "physical": r.physical, "unit": r.unit}
-                                  for name, r in readings.items()}, indent=2))
+                value = {name: {"raw": r.raw, "physical": r.physical, "unit": r.unit}
+                         for name, r in readings.items()}
+                if domain is not None:
+                    value = {"values": value, "raw_hex": domain.raw.hex(),
+                             "scaling_conflicts": domain.scaling_conflicts}
+                print(json.dumps(value, indent=2))
             else:
                 for name, reading in readings.items():
                     print(f"{name}: {reading.physical} {reading.unit or ''}".rstrip())
+                if domain is not None and domain.scaling_conflicts:
+                    print("Unresolved DVT/EDS scaling differences:")
+                    print(json.dumps(domain.scaling_conflicts, indent=2))
             return 0
+        if args.domain:
+            raise ValueError("--domain is only available for customer/sevcon min/max monitors")
         if args.kind == "events":
             rows = await dev.event_counters(start=args.start, limit=args.limit)
         else:
@@ -395,6 +479,8 @@ async def _run(args, dev: AsyncSevconGen4) -> int:
         values = []
         for row in rows:
             value = asdict(row)
+            if args.kind == "events":
+                value.update(event_id=row.event_id, raw_event_id=row.raw_event_id, saved=row.saved)
             for name in ("timestamp", "first", "last"):
                 if name in value:
                     value[name]["elapsed_seconds"] = getattr(row, name).elapsed_seconds

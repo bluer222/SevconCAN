@@ -100,6 +100,39 @@ than replacements for the installed EDS.
 | `Sevcon_Documentation/Object Dictionary FW 44A.xlsx` | `352906f2d0846fdf5a97036d17657d52bdae18ba` | Third worksheet, N789/N802 corroborate selective FIFO clearing. Its domain-log definitions differ from the installed target. |
 | `Sevcon manuals /PMAC encoder commission by Sevcon DVT macros.pdf` | `bb033c8b3c10aef0cfeea591b39848b2ad434102` | Commissioning reference; does not establish the target's proprietary command numbers or binary log formats. |
 
-The archive also lists DVT installers, including `SevconDVT_Customer_TCL85.exe`
-and `SevconDVT_Customer_Online_2.exe`. Recovering and inspecting their scripts
-is a separate step; an archived filename alone does not close a protocol gap.
+The complete `Sevcon DVT/SevconDVT_Customer_Online_2.exe` was recovered and
+verified as 21,076,357 bytes, Git blob
+[`9599c3cc59a9f46c919b353e433708afd97cc5de`](https://archive.softwareheritage.org/browse/content/sha1_git:9599c3cc59a9f46c919b353e433708afd97cc5de/),
+SHA-256 `7f3b821987fc91c3634442ff7a235b90e0b7f47400e0dde5d3ac1db7146fb510`.
+Some archive responses truncated with HTTP 200; resumed downloads were accepted
+only after the complete blob and SHA-256 matched. Static extraction with
+7-Zip followed by innoextract recovered 160 files from its nested `dvtc.exe`.
+Neither installer nor the recovered Tcl or DLL code was executed.
+
+The following files under `app/common/program` define the implemented
+protocol facts. They are not runtime dependencies and are not vendored here.
+
+| File | SHA-256 | Used for |
+| --- | --- | --- |
+| `load.tcl` | `e0b886478fcb0231fb2265427c25a6fbfe68ad3153929fa1cc1c030c0f62c767` | Gen4 bootloader identity, memory capability records, DLD/DLDx container, Intel HEX data, packet checksum, transfer reset and commit checksum |
+| `uut.tcl` | `15f784f539e74c4637c9f88f854b0e49e4042fa1fb634601ac4401b65368d547` | Event counter saved bit, selective/all-log resets and 24-byte min/max monitor domain |
+| `sdo_client.tcl` | `3bd2ee8d7ef174f72e1a684760f8bac656667de5000f624bb3989be6dc84077c` | DVT's four-byte segmented-upload length prefix is host API metadata, not part of the domain wire payload |
+
+The recovered `dvtint.dll` files are native PE libraries, not .NET assemblies.
+Their transport role and the available Tcl source made native decompilation
+unnecessary for these workflows. The package contains no `obd_cli.tcl` or
+numeric `5640h` command definitions. Its `5600h:8` ASCII CLI procedure targets
+an entry absent from this unit and was not enabled.
+
+Four complete firmware packages were independently recovered and checked
+against their archived Git blobs. All Intel HEX checksums pass; each has one
+contiguous memory-space-5 image. The Python parser accepts each with matching
+address and byte counts. Their hardware-compatibility fields are empty, and
+none establishes target-controller compatibility.
+
+| Firmware package | Git blob ID |
+| --- | --- |
+| `SN0058.28.dld` | `25d0c529acd9cedd11f9a6201f052c1b29aff633` |
+| `UK0319_35.dld` | `1e875cc3540a76a52527b0028b80a38e8862ccf3` |
+| `UK0319B38.dld` | `a4bf24713c290033a7be4cf6197ac431ee2cba62` |
+| `UK0319A44.dld` | `af81b5a30e05d7180abd8d5d0fb37c571e663496` |

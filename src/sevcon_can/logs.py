@@ -1,15 +1,19 @@
-"""Structured diagnostic logs through the installed Gen4 scalar OD records.
+"""Structured diagnostic logs through the installed Gen4 OD records.
 
 The selector/count/reset procedures follow OVMS rt_sevcon_faults.cpp's
-QueryLogs/ResetLogs and the supplied EDS. These are not parsers for 5600h
-domain uploads. Times count controller operating hours, not UTC time.
+QueryLogs/ResetLogs and the supplied EDS. The monitor-domain layout also
+follows Sevcon DVT and the physical 0705 controller's scalar/domain dumps.
+Times count controller operating hours, not UTC time.
 """
 from __future__ import annotations
 
+import asyncio
 from dataclasses import dataclass
-from typing import Dict, List, Optional, TYPE_CHECKING
+import math
+from typing import Any, Dict, List, Optional, TYPE_CHECKING
 
-from .exceptions import ProtocolError
+from . import datatypes as dt
+from .exceptions import ProtocolError, TimeoutError
 
 if TYPE_CHECKING:
     from .device import Reading
@@ -40,6 +44,19 @@ class EventCounter:
     first: LogTimestamp
     last: LogTimestamp
     count: int
+    saved: bool = False
+
+    @property
+    def raw_event_id(self) -> int:
+        """The complete 4201h..420Ah:1 word, including its saved flag."""
+        return self.event_id | (0x8000 if self.saved else 0)
+
+
+@dataclass(frozen=True)
+class MonitorDomain:
+    values: Dict[str, "Reading"]
+    scaling_conflicts: Dict[str, Dict[str, Any]]
+    raw: bytes
 
 
 _FIFO = {"system": (0x4100, 0x4101, 0x4102),
@@ -92,15 +109,21 @@ async def read_fifo_log(device, kind: str, *, start: int = 0,
 
 async def read_event_counters(device, *, start: int = 0,
                               limit: Optional[int] = None) -> List[EventCounter]:
-    """Read all ten event counters at 4201h..420Ah, including unused rows."""
+    """Read all ten event counters, separating bit 15's saved indication.
+
+    The remaining fifteen bits identify the event. This encoding follows
+    Sevcon DVT's ``uut.tcl`` get_event_log procedure; ``raw_event_id`` retains
+    the original word. Unused rows are included.
+    """
     _bounds(start, limit)
     async with device._diagnostic_log_lock:
         result = []
         for position in _positions(10, start, limit):
             values = [await _raw(device, 0x4201 + position, sub) for sub in range(1, 7)]
-            result.append(EventCounter(position, values[0],
+            result.append(EventCounter(position, values[0] & 0x7FFF,
                 LogTimestamp(values[1], values[2]),
-                LogTimestamp(values[3], values[4]), values[5]))
+                LogTimestamp(values[3], values[4]), values[5],
+                saved=bool(values[0] & 0x8000)))
         return result
 
 
@@ -116,6 +139,51 @@ async def read_operational_monitor(device, *, sevcon: bool = False) -> Dict[str,
         return {var.name: await device.read(var.index, var.subindex) for var in variables}
 
 
+async def read_operational_monitor_domain(device, *, sevcon: bool = False) -> MonitorDomain:
+    """Read the verified 0705 twelve-word monitor domain at 5600h:4/:5.
+
+    The payload contains the same raw values, in order, as 4300h/4301h:2..D;
+    it has no length prefix. DVT adds a four-byte prefix in its own SDO API.
+    Other product families and payload sizes are rejected because their
+    layouts can differ. Names, signed types, scaling and units come from the
+    selected scalar OD. Voltage interpretations that conflict with DVT are
+    reported with both conversions; matching raw layouts does not establish
+    which physical conversion applies to this controller.
+    """
+    from .device import Reading
+
+    index, subindex = (0x4301, 5) if sevcon else (0x4300, 4)
+    variables = [device.variable(index, sub) for sub in range(2, 14)]
+    if any(var.data_type != dt.INTEGER16 for var in variables):
+        raise ProtocolError("0705 monitor domains require twelve INTEGER16 scalar entries")
+    async with device._diagnostic_log_lock:
+        vendor = await _raw(device, 0x1018, 1)
+        product = await _raw(device, 0x1018, 2)
+        if vendor != 0x1E or product >> 16 != 0x0705:
+            raise ProtocolError("monitor-domain layout is verified only for Sevcon product family 0705")
+        data = await device.read_raw(0x5600, subindex)
+        if len(data) != 24:
+            raise ProtocolError(f"0705 monitor domain must contain 24 bytes, received {len(data)}")
+        result, conflicts = {}, {}
+        for position, var in enumerate(variables):
+            word = data[position * 2:position * 2 + 2]
+            raw = var.decode_raw(word)
+            result[var.name] = Reading(var, raw, var.to_physical(raw),
+                                       var.describe(raw), var.units)
+            if position < 4:
+                # DVT uses unsigned 12.4 voltage words, while the supplied
+                # 0705 EDS declares signed 8.8 scalar values. Preserve both.
+                conflicts[var.name] = {
+                    "dictionary_scale": var.scaling if var.scaling is not None else 1,
+                    "dvt_scale": 1 / 16,
+                    "dictionary_signed": True,
+                    "dvt_signed": False,
+                    "dictionary_physical": var.to_physical(raw),
+                    "dvt_physical": int.from_bytes(word, "little") / 16,
+                }
+        return MonitorDomain(result, conflicts, bytes(data))
+
+
 async def reset_diagnostic_log(device, kind: str) -> None:
     """Explicitly clear one log; controller and selected EDS enforce access.
 
@@ -127,3 +195,31 @@ async def reset_diagnostic_log(device, kind: str) -> None:
         raise ValueError("log kind must be 'system', 'faults', 'events', 'customer' or 'sevcon'")
     async with device._diagnostic_log_lock:
         await device.write(_RESET[kind], 1, True)
+
+
+async def reset_all_diagnostic_logs(device, *, timeout: float = 31,
+                                    poll_interval: float = 1) -> None:
+    """Explicitly clear all diagnostic logs, timers and operating-hour counters.
+
+    This destructive reset writes 4000h:1 and waits for the controller to
+    return its reset flag to zero, following DVT's clear_all_logs procedure.
+    The selected OD and controller enforce access; no login or NMT change is
+    performed. The supplied EDS requires level 5. The timeout includes lock
+    acquisition, the write, SDO reads and polling delays. A timeout does not
+    establish whether the controller completed the reset.
+    """
+    for name, value in (("timeout", timeout), ("poll_interval", poll_interval)):
+        if (isinstance(value, bool) or not isinstance(value, (int, float))
+                or not math.isfinite(value) or value <= 0):
+            raise ValueError(f"{name} must be finite and positive")
+
+    async def reset_and_wait():
+        async with device._diagnostic_log_lock:
+            await device.write(0x4000, 1, True)
+            while await _raw(device, 0x4000, 1) != 0:
+                await asyncio.sleep(poll_interval)
+
+    try:
+        await asyncio.wait_for(reset_and_wait(), timeout)
+    except asyncio.TimeoutError:
+        raise TimeoutError("timed out waiting for the 4000h:1 diagnostic reset flag to clear") from None

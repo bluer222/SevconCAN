@@ -120,3 +120,9 @@ as `spec_parser.py` symbols.
   first target dump returned 586 access-level aborts; engineering login
   reduced that to three. Local ACCESS_LEVEL metadata preflights writes;
   reads still report controller permission errors.
+* **Monitor voltage formats disagree.** Recovered DVT formats the first four
+  `5600h:4/:5` monitor words as unsigned 12.4 values; the selected EDS uses
+  signed 8.8 for their scalar counterparts. Both physical dumps confirm the
+  twelve raw words match `4300h/4301h:2..D`. They do not independently verify
+  voltage scaling. Domain reads preserve both interpretations in
+  `scaling_conflicts`; the original EDS is unchanged.

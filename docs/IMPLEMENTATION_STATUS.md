@@ -52,18 +52,32 @@ header mismatch remains visible.
 
 Structured diagnostic readers now cover both FIFO logs, all ten event
 counters and all twelve values in each customer/Sevcon min/max monitor.
+Counters separate the saved flag from the event ID and preserve its raw word.
+Both 24-byte min/max domains match their scalar records in both physical
+dumps. Their parser retains the DVT/EDS voltage-scaling conflict explicitly.
+The reset-all workflow separately clears diagnostics and operating hours,
+enforces the EDS's level-5 rule and waits for the completion flag to clear.
 Selectors and explicit resets are serialized per device. No read clears a
 log. Logout accepts the observed login-failed abort only after a successful
 fresh read of access level zero; transport failures cannot report success.
 
-Full function completeness remains open. The installed `5400h` bootloader
-trigger is accessible through typed/raw SDO, but firmware image parsing and
-erase/program/verify transfers are unimplemented. The reviewed manufacturer
-DVT tutorial names host commands without defining their CAN or file format.
-`5640h` command semantics and `5600h` binary log layouts are also unspecified
-in the available sources. Their generic raw access does not implement those
-workflows. Further firmware work needs the matching Sevcon bootloader
-application note, DVT scripts or a verified protocol capture.
+Recovery of the unavailable isPointless repository from Software Heritage
+provided DVT's actual Tcl source. The Gen4 `D0701` bootloader workflow now
+supports DLD/DLDx text parsing, live capability preflight, page programming,
+checksum acknowledgements, EEPROM reads and explicit entry/reset/exit.
+Programming tracks progress and incomplete sections across loader instances
+sharing a device, and never exits automatically. Four real archived packages
+validate parsing; none establishes compatibility with this controller.
+See [bootloader usage and limits](BOOTLOADER.md).
+
+Full function completeness remains open. The recovered package does not
+contain `obd_cli.tcl`, so installed `5640h` command numbers and semantics
+remain unknown. Other `5600h` binary FIFO/error-record layouts also remain
+undecoded. The target's bootloader revision and physical programming behavior
+have not been verified. Raw access to these objects does not establish their
+remaining workflows, and matching raw monitor words does not resolve their
+voltage conversion. Further work needs the missing command script, matching
+binary schemas or independent captures and measurements.
 
 ## Coverage
 
@@ -82,9 +96,9 @@ application note, DVT scripts or a verified protocol capture.
 | Drive control | State-based enable, mode selection, quick stop/disable commands and reset edges | Does not commission vehicle application, motor or contactors |
 | Encoder | Reads EDS-defined 4630h/6090h values; typed writes available | No automatic Sin/Cos alignment or invented firmware subindices |
 | Parameters | Save/default-restore signatures; JSON raw snapshots; selected restore with preflight and read-back | Selected restore is sequential, not atomic, and never saves implicitly |
-| Diagnostic logs | Both FIFO logs, all ten event counters, customer/Sevcon min/max monitors, explicit selective resets | Pinned OVMS procedures and installed EDS; operating timestamps and three raw data bytes retained; level-5 lifetime reset enforced; domain logs remain raw |
+| Diagnostic logs | Both FIFO logs, saved event flags/counters, scalar and `0705` monitor domains, selective resets and bounded reset-all | DVT/OVMS procedures, installed EDS and both physical dumps; explicit voltage interpretation conflict; other binary record domains remain raw |
 | User interfaces | CLI metadata search/describe, installed dictionary scan, diagnostic logs, monitor, shell and searchable browser GUI | Exact/optional dictionary selection, visible provenance, binary hex access; dumps retain errors and cancellation |
-| Firmware update | Not implemented | No verified Gen4 .dld/.dldx transport/file format available in the reviewed evidence |
+| Firmware update | Gen4 `D0701` DLD/DLDx parser, all-section preflight, checksummed programming, EEPROM reads, explicit entry/reset/exit | Recovered DVT source, independent peer tests, four real parser samples; no physical flash test or verified target image/bootloader revision |
 | Proprietary DVT command channel | Raw `5640h` access only | Command vocabulary and response semantics unverified; no claim of full DVT compatibility |
 | LSS | Not implemented | Bundled EDS explicitly declares LSS_Supported=0 |
 
@@ -145,7 +159,7 @@ installations can run `python conformance/run.py`; optional backend tests may
 be skipped when their dependencies are absent, and the output reports that.
 
 Recorded on 2026-10-17 with Python 3.14.7, python-can 4.6.1 and canopen 2.4.1:
-**262 tests passed with zero skips; 17 independent interoperability checks
+**288 tests passed with zero skips; 17 independent interoperability checks
 passed.** Pinned source hashes, generated tables, optional dictionary
 freshness, coverage-accounting and installed-export checks passed. The strict
 coverage check returned failure for its 34 unresolved references, as intended. GUI HTTP

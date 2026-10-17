@@ -164,11 +164,43 @@ one of `system`, `faults`, `events`, `customer` or `sevcon`. It enforces the
 selected dictionary's access rules without an implicit login, state change
 or store. Clearing the Sevcon lifetime monitor requires level 5 in the
 baseline EDS. Clearing a log does not clear active faults. These helpers use
-the scalar `4100h` through `4301h` records; `5600h` binary domain-log layouts
-remain undecoded.
+the scalar `4100h` through `4301h` records.
 
 A successful FIFO reset can retain entries whose log level exceeds the
 current access level. Read the FIFO again to inspect what remains.
+
+`logs customer --domain --json` and `logs sevcon --domain --json` read the
+verified 24-byte `5600h:4/:5` layout for product family `0705`. Python callers
+can use `await dev.operational_monitor_domain()`. The returned `MonitorDomain`
+retains exact bytes, selected-dictionary readings and `scaling_conflicts`.
+The recovered DVT source uses unsigned 12.4 voltage values; the baseline EDS
+uses signed 8.8 values. Both physical dumps confirm the raw field layout,
+but cannot independently establish the correct voltage conversion. The
+result reports both conversions. No dictionary scaling is silently changed.
+Other `5600h` binary record layouts remain undecoded.
+
+Event counters now separate their saved flag from the fifteen-bit event ID;
+`raw_event_id` retains the original word. `reset-all-logs`, or
+`await dev.reset_all_diagnostic_logs()`, separately resets all diagnostics
+and operating-hour counters through `4000h:1`. It requires level 5 in the
+baseline EDS and waits for the controller's completion flag to become zero.
+Timeout and cancellation do not establish that the controller stopped resetting.
+
+## Firmware bootloader
+
+The library and CLI implement the recovered Gen4 `D0701` bootloader protocol,
+including DLD/DLDx text parsing, live section preflight, packet checksums,
+programming, EEPROM reads and explicit entry/reset/exit operations.
+
+```sh
+sevcon-can firmware-info firmware.dld
+```
+
+Package inspection is offline. Programming requires an already-running,
+identified bootloader and leaves it in bootloader mode. No recovered firmware
+package has been established as compatible with this controller. See
+[bootloader usage and limits](docs/BOOTLOADER.md) for the API, commands and
+validation evidence. No physical flashing was performed during this work.
 
 ## Importable parameter dictionaries
 

@@ -134,6 +134,28 @@ enumeration above shows that this controller does not install them.
 The AC induction firmware used as a supplemental source must not replace
 the PMAC dictionary automatically.
 
+## Monitor domains and recovered DVT source
+
+Both dumps successfully read `5600h:4` and `5600h:5` as exactly 24 bytes.
+Each payload contains twelve little-endian 16-bit words matching, in order,
+the same dump's scalar `4300h` or `4301h` subindices 2 through D. All 48 word
+comparisons match across the two dumps. Recovered DVT `uut.tcl` independently
+defines that order. Its apparent four-byte prefix belongs to DVT's host SDO
+API; the physical wire payload has no such prefix.
+
+The raw agreement exposes a separate interpretation conflict. The baseline
+EDS uses signed 8.8 monitor voltages, while DVT formats the first four words
+as unsigned 12.4 voltages. For example, raw maximum-battery value 1066
+means 4.1640625 V under the EDS or 66.625 V under DVT. Raw field agreement
+alone cannot select the correct conversion. The domain reader retains the
+selected dictionary's readings and reports both conversions, their scales
+and signedness in `scaling_conflicts`. No EDS metadata was overwritten.
+An independent voltage reference is still needed to resolve this discrepancy.
+
+The recovered package also defines bootloader transfers, but neither value
+dump identifies this unit's bootloader revision or verifies programming.
+No recovered firmware image has verified compatibility with this unit.
+
 Observed record maxima reinforce the need for firmware-specific definitions:
 
 | Record | Live subindex 0 |

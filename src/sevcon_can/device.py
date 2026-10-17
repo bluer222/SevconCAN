@@ -130,6 +130,7 @@ class AsyncSevconGen4:
         self._fault_list_lock = asyncio.Lock()
         self._fault_text_lock = asyncio.Lock()
         self._diagnostic_log_lock = asyncio.Lock()
+        self._bootloader_lock = asyncio.Lock()
         self._hb_sub = network.subscribe(
             _nmt.HEARTBEAT_BASE + node_id, self._on_heartbeat)
 
@@ -862,6 +863,17 @@ class AsyncSevconGen4:
         """Explicitly clear one diagnostic log, subject to controller access."""
         from .logs import reset_diagnostic_log
         await reset_diagnostic_log(self, kind)
+
+    async def operational_monitor_domain(self, *, sevcon: bool = False):
+        """Read the 0705 monitor domain, retaining raw bytes and scale conflicts."""
+        from .logs import read_operational_monitor_domain
+        return await read_operational_monitor_domain(self, sevcon=sevcon)
+
+    async def reset_all_diagnostic_logs(self, *, timeout: float = 31,
+                                        poll_interval: float = 1) -> None:
+        """Clear all diagnostics and operating-hour counters; wait for flag zero."""
+        from .logs import reset_all_diagnostic_logs
+        await reset_all_diagnostic_logs(self, timeout=timeout, poll_interval=poll_interval)
 
     # ---- CANopen housekeeping ----
     async def producer_heartbeat(self, period_ms: int) -> None:

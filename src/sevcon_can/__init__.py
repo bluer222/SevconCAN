@@ -6,6 +6,11 @@ units and enum labels, login, NMT, heartbeat/EMCY/TPDO consumers, the
 DSP402 drive state machine, and a simulator that runs without hardware.
 """
 from .cyclic import HeartbeatProducer, SyncProducer
+from .bootloader import (
+    BootloaderIdentity, BootloaderProgrammingError, DldImage, Gen4Bootloader,
+    ImageSection, MemoryCapabilities, ProgrammingPlan, ProgrammingResult,
+    load_dld, packet_checksum, parse_dld, preflight_image,
+)
 from .device import AsyncSevconGen4, Reading, TARGET_CONTROLLER
 from .discovery import DictionaryEntry, discover_dictionary, iter_dictionary_entries
 from .descriptions import OBJECT_DESCRIPTIONS, describe
@@ -34,8 +39,9 @@ from .exceptions import (
 )
 from .faults import by_level, led_category, lookup as fault_lookup, search as fault_search
 from .logs import (
-    EventCounter, FifoLogEntry, LogTimestamp, read_event_counters, read_fifo_log,
-    read_operational_monitor, reset_diagnostic_log,
+    EventCounter, FifoLogEntry, LogTimestamp, MonitorDomain,
+    read_event_counters, read_fifo_log, read_operational_monitor,
+    read_operational_monitor_domain, reset_all_diagnostic_logs, reset_diagnostic_log,
 )
 from .network import FrameQueue, Network, Subscription
 from .nmt import (
@@ -70,6 +76,9 @@ __all__ = [
     "ConfigurationChange", "ConfigurationRestoreError", "ConfigurationSnapshot",
     "export_configuration", "plan_configuration_restore", "restore_configuration",
     "AsyncSevconGen4", "Reading", "TARGET_CONTROLLER",
+    "BootloaderIdentity", "BootloaderProgrammingError", "DldImage", "Gen4Bootloader",
+    "ImageSection", "MemoryCapabilities", "ProgrammingPlan", "ProgrammingResult",
+    "load_dld", "packet_checksum", "parse_dld", "preflight_image",
     "DictionaryEntry", "discover_dictionary", "iter_dictionary_entries",
     "describe", "OBJECT_DESCRIPTIONS",
     "ObjectDictionary", "Variable", "Record", "load_eds", "gen4_od", "bundled_eds_path",
@@ -87,6 +96,8 @@ __all__ = [
     "fault_lookup", "fault_search", "by_level", "led_category",
     "EventCounter", "FifoLogEntry", "LogTimestamp", "read_event_counters", "read_fifo_log",
     "read_operational_monitor", "reset_diagnostic_log",
+    "MonitorDomain", "read_operational_monitor_domain",
+    "reset_all_diagnostic_logs",
     "SimulatedGen4", "create_pair",
     "SevconError", "TransportError", "TimeoutError", "ProtocolError",
     "ObjectDictionaryError", "AccessError", "SdoAbortError", "StateError",

@@ -25,6 +25,12 @@ certification or a hardware acceptance test.
    FIFO iteration, selector/reset serialization, all event counters and both
    twelve-field min/max monitors. Logout tests require fresh level-zero
    verification and propagate verification failures.
+   Bootloader tests use an independent SDO peer for capability widths,
+   packet order and checksums, whole-image preflight, failure/cancellation,
+   shared checksum history and incomplete-session exit rejection. Domain-log
+   fixtures cover the target's 24-byte monitor layout and explicit scale
+   conflicts. Reset-all tests include its complete deadline, stuck flags and
+   cancellation while waiting for a selector lock or SDO response.
 4. With the optional backend dependencies installed, real python-can virtual
    backends and pyserial SLCAN loopback exercise frame conversion, remote
    DLC, error payloads, serial parsing, receiver failures and resource cleanup.
@@ -60,15 +66,18 @@ cause an explicit failure when `--interop` is requested.
 - The simulator is a protocol fixture, with limits described in
   `docs/IMPLEMENTATION_STATUS.md`. The independent stack reduces reliance on
   that fixture but does not supply physical validation.
-- Firmware flashing and proprietary DVT services remain unimplemented.
-  LSS is unsupported according to the bundled EDS's `LSS_Supported=0`.
+- Gen4 `D0701` firmware programming follows recovered DVT source and has
+  software peer tests, but physical erase/program/commit behavior and image
+  compatibility remain unverified. Numeric `5640h` commands and the other
+  binary record-domain layouts remain undocumented. LSS is unsupported
+  according to the bundled EDS's `LSS_Supported=0`.
 - Source pinning verifies the checked-in documents, not their currency or
   suitability for the exact installed firmware.
 - The audit currently retains 34 unresolved index/subindex references. Run
   `python conformance/run.py --interop --require-complete` to fail on these
   known gaps. None is installed in the supplied target export. Firmware
-  programming, proprietary command semantics and domain-log decoding remain
-  open even when the target object-dictionary gate passes.
+  programming on this unit, proprietary command semantics and the remaining
+  domain-log decoding remain open even when the target dictionary gate passes.
 
 ## Acceptance
 

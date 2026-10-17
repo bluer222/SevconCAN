@@ -286,6 +286,133 @@ class TestConfigurationCommands(unittest.TestCase):
             open_device.assert_not_called()
 
 
+class TestFirmwareCommands(unittest.TestCase):
+    IMAGE = ("+TARGET_MEMORY_SPACE\n5\n+CODE\n:02000004007B7F\n"
+             ":048000000102030472\n:00000001FF\n+ENDCODE\n+EOF\n")
+
+    def test_package_inspection_and_invalid_program_input_do_not_open_can(self):
+        import io
+        import json
+        import tempfile
+        from pathlib import Path
+        from contextlib import redirect_stdout, redirect_stderr
+        from unittest.mock import AsyncMock, patch
+        from sevcon_can.cli import main_async
+        with tempfile.TemporaryDirectory() as folder:
+            path = Path(folder) / "firmware.dld"
+            path.write_text(self.IMAGE)
+            out = io.StringIO()
+            with patch("sevcon_can.cli._open", new_callable=AsyncMock) as open_device, \
+                    redirect_stdout(out):
+                self.assertEqual(run(main_async(["firmware-info", str(path)])), 0)
+                open_device.assert_not_awaited()
+            value = json.loads(out.getvalue())
+            self.assertEqual(value["sections"], [{"memory_space": 5, "name": "dsp-zeffer",
+                                                "start_address": 0x7B8000, "size": 4}])
+            self.assertFalse(value["hardware_compatibility_verified"])
+            path.write_text(self.IMAGE.replace("01020304", "01020305"))
+            with patch("sevcon_can.cli._open", new_callable=AsyncMock) as open_device, \
+                    redirect_stderr(io.StringIO()):
+                self.assertEqual(run(main_async(["firmware-program", str(path)])), 1)
+                open_device.assert_not_awaited()
+
+    def test_program_prints_commit_checksum_without_entering_or_exiting(self):
+        import io
+        import json
+        from contextlib import redirect_stdout
+        from unittest.mock import AsyncMock, MagicMock, patch
+        from sevcon_can.bootloader import (
+            BootloaderIdentity, PacketReceipt, ProgrammingResult, SectionReceipt, parse_dld,
+        )
+        from sevcon_can.cli import _run, build_parser
+
+        async def go():
+            args = build_parser().parse_args(["firmware-program", "unused.dld"])
+            args.firmware_image = parse_dld(self.IMAGE)
+            loader = MagicMock()
+            loader.program = AsyncMock(return_value=ProgrammingResult(
+                BootloaderIdentity("D0701.0001", 1), True,
+                (PacketReceipt("dsp-zeffer", 0x7B8000, 4, 0xFEF6),),
+                (SectionReceipt("dsp-zeffer", 4, 10),)))
+            loader.start, loader.end, loader.reset = AsyncMock(), AsyncMock(), AsyncMock()
+            out = io.StringIO()
+            with patch("sevcon_can.bootloader.Gen4Bootloader", return_value=loader), redirect_stdout(out):
+                self.assertEqual(await _run(args, MagicMock()), 0)
+            self.assertEqual(json.loads(out.getvalue())["commit_checksum"], 10)
+            loader.program.assert_awaited_once_with(args.firmware_image)
+            loader.start.assert_not_awaited()
+            loader.end.assert_not_awaited()
+            loader.reset.assert_not_awaited()
+        run(go())
+
+    def test_explicit_end_uses_the_supplied_checksum(self):
+        import io
+        from contextlib import redirect_stdout
+        from unittest.mock import AsyncMock, MagicMock, patch
+        from sevcon_can.cli import _run, build_parser
+
+        async def go():
+            loader = MagicMock()
+            loader.end = AsyncMock()
+            args = build_parser().parse_args(["bootloader-end", "0x1234"])
+            with patch("sevcon_can.bootloader.Gen4Bootloader", return_value=loader), \
+                    redirect_stdout(io.StringIO()):
+                self.assertEqual(await _run(args, MagicMock()), 0)
+            loader.end.assert_awaited_once_with(0x1234)
+        run(go())
+
+    def test_domain_and_event_json_preserve_interpretation_differences(self):
+        import io
+        import json
+        from contextlib import redirect_stdout
+        from sevcon_can.cli import _run, build_parser
+
+        async def go():
+            dev, sim = create_pair()
+            async with dev, sim:
+                sim._store[(0x1018, 2)] = (0x0705301B).to_bytes(4, "little")
+                payload = bytes.fromhex("80012a0480012a0400000000000000000000000000000000")
+                sim._store[(0x5600, 4)] = payload
+                args = build_parser().parse_args(["logs", "customer", "--domain", "--json"])
+                out = io.StringIO()
+                with redirect_stdout(out):
+                    self.assertEqual(await _run(args, dev), 0)
+                result = json.loads(out.getvalue())
+                self.assertEqual(result["raw_hex"], payload.hex())
+                conflict = result["scaling_conflicts"]["Maximum Battery Voltage"]
+                self.assertEqual(conflict["dictionary_physical"], 1066 / 256)
+                self.assertEqual(conflict["dvt_physical"], 1066 / 16)
+                sim._store[(0x4201, 1)] = (0xC581).to_bytes(2, "little")
+                args = build_parser().parse_args(["logs", "events", "--limit", "1", "--json"])
+                out = io.StringIO()
+                with redirect_stdout(out):
+                    self.assertEqual(await _run(args, dev), 0)
+                counter, = json.loads(out.getvalue())
+                self.assertEqual((counter["event_id"], counter["raw_event_id"], counter["saved"]),
+                                 (0x4581, 0xC581, True))
+                args = build_parser().parse_args(["logs", "events", "--domain"])
+                with self.assertRaisesRegex(ValueError, "only available"):
+                    await _run(args, dev)
+        run(go())
+
+    def test_reset_all_requires_its_own_explicit_command(self):
+        import io
+        from contextlib import redirect_stdout
+        from unittest.mock import AsyncMock, MagicMock
+        from sevcon_can.cli import _run, build_parser
+
+        async def go():
+            dev = MagicMock()
+            dev.reset_all_diagnostic_logs = AsyncMock()
+            dev.reset_diagnostic_log = AsyncMock()
+            args = build_parser().parse_args(["reset-all-logs", "--timeout", "7"])
+            with redirect_stdout(io.StringIO()):
+                self.assertEqual(await _run(args, dev), 0)
+            dev.reset_all_diagnostic_logs.assert_awaited_once_with(timeout=7)
+            dev.reset_diagnostic_log.assert_not_awaited()
+        run(go())
+
+
 class TestDictionaryCommands(unittest.TestCase):
     def invoke(self, args):
         import io
