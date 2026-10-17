@@ -43,9 +43,11 @@ from __future__ import annotations
 import asyncio
 import struct
 import time
+from copy import deepcopy
 from typing import Dict, List, Optional, Tuple
 
 from . import datatypes as dt
+from .discovery import ACCESS_TYPES, DATA_TYPES
 from .emcy import encode_emcy
 from .network import Network
 from .nmt import (
@@ -60,9 +62,9 @@ from .nmt import (
     STATE_PREOP,
     STATE_STOPPED,
 )
-from .od import ObjectDictionary, Variable, load_eds, bundled_eds_path
+from .od import ObjectDictionary, Variable, gen4_od
 from .pdo import (COB_ID_EXTENDED_BIT, cob_id_can_id, cob_id_valid,
-                  decode_mapping_word, decode_pdo, encode_pdo, SYNC_COB_ID)
+                  decode_mapping_word, decode_pdo, encode_pdo, is_dummy_mapping, SYNC_COB_ID)
 from .sdo import (
     ABORT_NO_OBJECT,
     ABORT_NO_SUBINDEX,
@@ -105,7 +107,7 @@ class SimulatedGen4:
         if not 0 <= heartbeat_ms <= 32767:
             raise ValueError("heartbeat period must be 0..32767 ms")
         self.node_id = node_id
-        self.od = od if od is not None else load_eds(bundled_eds_path())
+        self.od = od if od is not None else deepcopy(gen4_od())
         self.heartbeat_ms = heartbeat_ms
         self.network: Optional[Network] = None
         self._server: Optional[SdoServer] = None
@@ -193,11 +195,15 @@ class SimulatedGen4:
         self._controlword = 0
         self._pending_rpdos.clear()
         self._store[(0x1017, 0)] = _U16.pack(self.heartbeat_ms)
+        if not int.from_bytes(self._store.get((0x1014, 0), b""), "little"):
+            self._store[(0x1014, 0)] = _U32.pack(0x80 + self.node_id)
         self._store[(0x5000, 1)] = bytes((0,))
         self._store[(0x5110, 0)] = bytes((STATE_PREOP,))
         self._store[(0x6041, 0)] = _U16.pack(self._statusword)
         self._hb_state = STATE_PREOP
         self._faults.clear()
+        self._dictionary_entries = list(self.od.variables())
+        self._dictionary_cursor = 0
 
     def _find(self, index: int, subindex: int) -> Variable:
         from .exceptions import ObjectDictionaryError  # noqa: F401  (re-export guard)
@@ -220,6 +226,8 @@ class SimulatedGen4:
         var = self._find(index, subindex)
         if not var.readable:
             raise SdoAbortError(ABORT_WRITE_ONLY, index, subindex)
+        if index == 0x5630 and subindex:
+            return self._dictionary_metadata(subindex)
         if (index, subindex) == (0x5300, 1):
             return _U16.pack(len(self._faults))
         if (index, subindex) == (0x5300, 3):
@@ -231,11 +239,38 @@ class SimulatedGen4:
             return text.encode("latin-1")
         return bytes(self._store.get((index, subindex), b""))
 
+    def _dictionary_metadata(self, subindex: int) -> bytes:
+        if subindex == 1:
+            return _U16.pack(len(self._dictionary_entries))
+        var = self._dictionary_entries[self._dictionary_cursor]
+        internal_type = next((code for code, dtype in DATA_TYPES.items()
+                              if dtype == var.data_type), 14)
+        access = "rw" if var.access in ("rwr", "rww") else var.access
+        access_code = next((code for code, name in ACCESS_TYPES.items() if name == access), 0)
+        values = {
+            2: (var.index, 2), 3: (var.subindex, 1),
+            4: (getattr(self.od[var.index], "object_type", 7), 1),
+            5: (internal_type, 1), 6: (access_code, 1),
+            7: (int(var.low or 0) & 0xFFFFFFFF, 4),
+            8: (int(var.high or 0) & 0xFFFFFFFF, 4),
+            9: (int(var.pdo_mappable), 1),
+            10: (int(var.extra.get("OBJECT_VERSION", "0"), 0), 2),
+            11: (var.obj_flags, 1),
+        }
+        value, size = values[subindex]
+        return value.to_bytes(size, "little")
+
     def _sdo_write(self, index: int, subindex: int, data: bytes) -> None:
         from .exceptions import SdoAbortError
         var = self._find(index, subindex)
         if not var.writable:
             raise SdoAbortError(ABORT_READ_ONLY, index, subindex)
+        if (index, subindex) == (0x5630, 1):
+            cursor = int.from_bytes(data, "little")
+            if len(data) != 2 or cursor >= len(self._dictionary_entries):
+                raise SdoAbortError(ABORT_VALUE_RANGE, index, subindex)
+            self._dictionary_cursor = cursor
+            return
         if (index, subindex) == (0x5000, 2):
             password = int.from_bytes(data[:2], "little")
             if password == 0:
@@ -369,7 +404,11 @@ class SimulatedGen4:
                      error_register: int = 0x81, extra: bytes = b"\x00\x00\x00") -> None:
         if fault_id not in self._faults:
             self._faults.append(fault_id)
-        frame = encode_emcy(self.node_id, error_code, error_register, fault_id, extra)
+        cob_id = int.from_bytes(self._store[(0x1014, 0)], "little")
+        if not cob_id_valid(cob_id):
+            return
+        frame = encode_emcy(self.node_id, error_code, error_register, fault_id, extra,
+                            cob_id=cob_id)
         self.sent_emcy.append((fault_id, bytes(frame.data)))
 
         async def _send() -> None:
@@ -398,6 +437,8 @@ class SimulatedGen4:
             decoded = decode_pdo(data, self._mapping(False, number), self.od)
             updates = []
             for value in decoded:
+                if is_dummy_mapping(self.od, value.index, value.subindex, value.bits):
+                    continue
                 var = self.od.variable((value.index, value.subindex))
                 if not var.writable or not var.pdo_mappable:
                     return

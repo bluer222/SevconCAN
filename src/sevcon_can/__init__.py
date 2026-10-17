@@ -7,6 +7,7 @@ DSP402 drive state machine, and a simulator that runs without hardware.
 """
 from .cyclic import HeartbeatProducer, SyncProducer
 from .device import AsyncSevconGen4, Reading, TARGET_CONTROLLER
+from .discovery import DictionaryEntry, discover_dictionary, iter_dictionary_entries
 from .descriptions import OBJECT_DESCRIPTIONS, describe
 from .configuration import (
     ConfigurationChange, ConfigurationRestoreError, ConfigurationSnapshot,
@@ -65,6 +66,7 @@ __all__ = [
     "ConfigurationChange", "ConfigurationRestoreError", "ConfigurationSnapshot",
     "export_configuration", "plan_configuration_restore", "restore_configuration",
     "AsyncSevconGen4", "Reading", "TARGET_CONTROLLER",
+    "DictionaryEntry", "discover_dictionary", "iter_dictionary_entries",
     "describe", "OBJECT_DESCRIPTIONS",
     "ObjectDictionary", "Variable", "Record", "load_eds", "gen4_od", "bundled_eds_path",
     "SdoClient", "SdoServer", "crc16",

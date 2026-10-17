@@ -120,7 +120,7 @@ class SyncProducer(_PeriodicProducer):
     ``cob_id`` accepts object 1005h's full COB-ID, including bit 29 for an
     extended identifier and bit 30 for the producer flag. Configure every
     node to consume that identifier. ``counter_overflow=None`` sends empty
-    SYNC frames; a value 1..240 sends counters cycling from 1 to that value.
+    SYNC frames; a value 2..240 sends counters cycling from 1 to that value.
     """
 
     def __init__(self, network: Network, *, period_ms: float = 20,
@@ -131,8 +131,8 @@ class SyncProducer(_PeriodicProducer):
             raise ValueError("SYNC COB-ID bit 31 is reserved")
         self._can_id = cob_id_can_id(cob_id)
         self.cob_id = cob_id
-        if counter_overflow is not None and not 1 <= counter_overflow <= 240:
-            raise ValueError("SYNC counter overflow must be 1..240 or None")
+        if counter_overflow is not None and not 2 <= counter_overflow <= 240:
+            raise ValueError("SYNC counter overflow must be 2..240 or None")
         self.counter_overflow = counter_overflow
         self._counter = 0
 

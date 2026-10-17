@@ -50,11 +50,14 @@ def _var_record(var: Variable) -> Dict[str, Any]:
         "units": var.units,
         "labels": {str(k): v for k, v in var.labels.items()},
         "bitfields": [bf.name for bf in var.bitfields],
+        "bitfield_labels": [label for bf in var.bitfields for label in bf.labels.values()],
         "level": var.access_level,
         "preop": var.preop_only,
         "category": var.category,
         "section": var.section,
         "pdo": var.pdo_mappable,
+        "eeprom": var.eeprom,
+        "extra": dict(var.extra),
     }
 
 
@@ -160,7 +163,8 @@ function showTab(w){
 function matchVar(v,q){
  if(!q)return true;
  q=q.toLowerCase();
- return (v.path+" "+(v.tag||"")+" "+hx(v.index)+" "+v.index).toLowerCase().includes(q);
+ return [v.path,v.tag,hx(v.index),v.index,hx(v.index).slice(2)+":"+v.sub.toString(16).padStart(2,"0"),
+  v.category,v.section,v.eeprom,...Object.values(v.labels),...v.bitfields,...v.bitfield_labels].join(" ").toLowerCase().includes(q);
 }
 function render(){
  const q=document.getElementById("q").value;
@@ -188,6 +192,8 @@ function render(){
   const extra=[];
   if(v.level)extra.push("login ≥"+v.level);
   if(v.preop)extra.push("pre-op only");
+  if(v.extra.SUPPLEMENTAL_SOURCE)extra.push("Firmware dependent; source "+v.extra.SUPPLEMENTAL_SOURCE+
+   "; product "+v.extra.FIRMWARE_PRODUCT+", revision "+v.extra.FIRMWARE_REVISION);
   if(extra.length)rules+=(rules?"; ":"")+extra.join("; ");
   out+=`<tr><td></td><td class="mono">${v.sub}</td><td>${esc(v.name)}</td>`+
    `<td class="mono">${v.access}</td><td>${esc(v.dtype)}</td><td class="mono">${lim}</td>`+
@@ -246,8 +252,8 @@ def main(argv=None) -> int:
     if args.eds:
         od = load_eds(args.eds)
     else:
-        from sevcon_can.od import bundled_eds_path, load_eds as _load
-        od = _load(bundled_eds_path())
+        from sevcon_can.od import gen4_od
+        od = gen4_od(include_supplemental=True)
     out = Path(args.out)
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(render_page(od, args.title), encoding="utf-8")

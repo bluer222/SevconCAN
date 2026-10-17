@@ -179,6 +179,11 @@ class Variable:
                 v = parse_int(text, node_id)
             except ValueError:
                 return None
+            bounds = dt.limits(self.data_type)
+            if bounds is not None and bounds[0] < 0 and v > bounds[1]:
+                bits = dt.size_of(self.data_type) * 8
+                if v < 1 << bits:
+                    v -= 1 << bits
             return bool(v) if self.data_type == dt.BOOLEAN else v
         if self.data_type in dt.FLOAT_TYPES:
             return float(text)
@@ -227,19 +232,28 @@ class Variable:
                 return k
         raise ValueError(f"{label!r} is not a label of {self.path}: {sorted(self.labels.values())}")
 
-    def check_range(self, raw: int) -> None:
-        if isinstance(raw, bool) or not isinstance(raw, int):
-            return
+    def raw_limits(self) -> Tuple[Optional[int], Optional[int]]:
+        """Normalize signed EDS limits without changing the source metadata."""
         lo, hi = self.low, self.high
         lim = dt.limits(self.data_type)
         # EDS limits of signed types are often written as raw two's complement
         # (e.g. LowLimit=0x8000 for INTEGER16).
         if lim is not None and lim[0] < 0:
+            # Some Gen4 signed ranges end at +32768, one past INTEGER16.
+            # Interpreting that decimal boundary as -32768 rejects real values.
+            if lo == lim[0] and hi == lim[1] + 1:
+                hi = lim[1]
             bits = dt.size_of(self.data_type) * 8  # type: ignore[operator]
             if lo is not None and lo > lim[1]:
                 lo -= 1 << bits
             if hi is not None and hi > lim[1]:
                 hi -= 1 << bits
+        return lo, hi
+
+    def check_range(self, raw: int) -> None:
+        if isinstance(raw, bool) or not isinstance(raw, int):
+            return
+        lo, hi = self.raw_limits()
         if lo is not None and hi is not None and lo > hi:
             return  # EDS gives no usable range
         if lo is not None and raw < lo:
@@ -302,6 +316,7 @@ class ObjectDictionary:
     comments: List[str] = field(default_factory=list)
     source: Optional[str] = None
     is_dcf: bool = False
+    dummy_usage: Dict[int, bool] = field(default_factory=dict)
 
     # ---- container ----
     def __getitem__(self, key: Union[int, str]) -> Entry:
@@ -397,6 +412,7 @@ class ObjectDictionary:
                 for v in obj:
                     for n in {normalize_name(f"{obj.name}.{v.name}"),
                               normalize_name(f"{obj.tag}.{v.name}") if obj.tag else "",
+                              normalize_name(v.tag or ""),
                               normalize_name(v.name)} - {""}:
                         idx.setdefault(n, []).append(v)
         self._names = idx  # type: ignore[attr-defined]
@@ -418,15 +434,23 @@ class ObjectDictionary:
         raise ObjectDictionaryError(f"name {name!r} is ambiguous ({where}); use index or Parent.Name")
 
     def search(self, text: str) -> List[Variable]:
-        """Case-insensitive substring search over variable paths and tags."""
-        t = text.lower()
-        return [v for v in self.variables()
-                if t in v.path.lower() or (v.tag and t in v.tag.lower())]
+        """Search names, addresses, labels, bitfields and Sevcon metadata."""
+        t = text.casefold()
+        result = []
+        for var in self.variables():
+            names = [var.path, var.tag or "", var.category or "", var.section or "",
+                     var.eeprom or "", f"{var.index:04X}:{var.subindex:02X}",
+                     *var.labels.values()]
+            for bitfield in var.bitfields:
+                names.extend([bitfield.name, *bitfield.labels.values()])
+            if any(t in name.casefold() for name in names):
+                result.append(var)
+        return result
 
 
 _INDEX_TEXT_RE = re.compile(
     r"^\s*(0x)?([0-9A-Fa-f]{4})(h)?\s*"
-    r"(?:(sub|[:,.])\s*(0x)?([0-9A-Fa-f]{1,2})(h)?)?\s*$",
+    r"(?:(sub|[:,.])\s*(0x)?([0-9A-Fa-f]{1,3})(h)?)?\s*$",
     re.IGNORECASE,
 )
 
@@ -447,10 +471,12 @@ def _parse_index_text(text: str) -> Optional[Tuple[int, Optional[int]]]:
     if sub is None:
         return int(idx, 16), None
     if sub_prefix or sub_h or sep.lower() == "sub":
-        return int(idx, 16), int(sub, 16)
-    if not sub.isdigit():
+        value = int(sub, 16)
+    elif sub.isdigit():
+        value = int(sub, 10)
+    else:
         return None
-    return int(idx, 16), int(sub, 10)
+    return (int(idx, 16), value) if value <= 255 else None
 
 
 # ---------------------------------------------------------------------------
@@ -607,6 +633,11 @@ def parse_eds(text: str, source: Optional[str] = None) -> ObjectDictionary:
     by_name = {s.name.upper(): s for s in sections}
     od.file_info = dict(by_name.get("FILEINFO", _Section("")).keys)
     od.device_info = dict(by_name.get("DEVICEINFO", _Section("")).keys)
+    od.dummy_usage = {
+        int(key[-4:], 16): bool(parse_int(value))
+        for key, value in by_name.get("DUMMYUSAGE", _Section("")).keys.items()
+        if re.fullmatch(r"Dummy[0-9A-Fa-f]{4}", key, re.IGNORECASE)
+    }
     od.commissioning = dict(by_name.get("DEVICECOMISSIONING", by_name.get("DEVICECOMMISSIONING", _Section(""))).keys)
     com = by_name.get("COMMENTS")
     if com is not None:
@@ -672,13 +703,32 @@ def bundled_eds_path() -> Path:
     return Path(__file__).with_name("data") / "Gen4.eds"
 
 
-_GEN4_CACHE: Optional[ObjectDictionary] = None
+_GEN4_CACHE: Dict[bool, ObjectDictionary] = {}
 
 
-def gen4_od() -> ObjectDictionary:
-    """The bundled Sevcon Gen4 object dictionary (parsed once, then shared;
-    treat as read-only)."""
-    global _GEN4_CACHE
-    if _GEN4_CACHE is None:
-        _GEN4_CACHE = load_eds(bundled_eds_path())
-    return _GEN4_CACHE
+def gen4_od(*, include_supplemental: bool = False) -> ObjectDictionary:
+    """Bundled dictionary, optionally adding firmware-dependent missing entries.
+
+    Supplements never replace an EDS entry. Their ``extra`` metadata records
+    the source and firmware; availability on a controller is not established.
+    Pass ``include_supplemental=True`` to select these alternate definitions.
+    Only select them when they match your firmware. A custom EDS
+    loaded with :func:`load_eds` is never supplemented. Cached dictionaries
+    are shared and must be treated as read-only.
+    """
+    if include_supplemental not in _GEN4_CACHE:
+        od = load_eds(bundled_eds_path())
+        if include_supplemental:
+            supplement = load_eds(bundled_eds_path().with_name("Gen4-supplement.eds"))
+            for entry in supplement:
+                if entry.index not in od.objects:
+                    od.add(entry)
+                elif isinstance(entry, Record) and isinstance(od[entry.index], Record):
+                    target = od[entry.index]
+                    for var in entry:
+                        if var.subindex not in target.subs:
+                            var.parent_name = target.name
+                            target.subs[var.subindex] = var
+            od.source += " + Gen4-supplement.eds"
+        _GEN4_CACHE[include_supplemental] = od
+    return _GEN4_CACHE[include_supplemental]

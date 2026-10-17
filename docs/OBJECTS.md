@@ -15,7 +15,7 @@ SCALING unless noted.
 | 1010h:1 / 1011h:1 | Store / restore | write `"save"` `0x65766173` / `"load"` `0x64616F6C` |
 | 1014h | EMCY COB-ID | set `0x80 + node` |
 | 1016h / 1017h | Heartbeat consumer / producer | ms; configure both sides |
-| 1018h | Identity | vendor `0x1E`, product `0x0101503C`, rev, serial |
+| 1018h | Identity | live vendor/product/revision/serial; EDS defaults are not installed-device identity |
 | 1200h–1203h | SDO servers | 1200h default `0x600/0x580 + node`; 1201h–1203h disabled (`0`) |
 | 1400h–1404h / 1600h–1604h | RPDO comm / mapping | 8 entries max per PDO |
 | 1800h–1804h / 1A00h–1A04h | TPDO comm / mapping | defaults disabled (`0x80000202`…) |
@@ -29,12 +29,13 @@ SCALING unless noted.
 | 5001h | Password key | customer-specific encryption input |
 | 2800h | Force pre-operational | BOOLEAN rw, level 4; 1 = pre-op, 0 = operational |
 | 2830h | Assumed severity for non-Sevcon EMCYs | |
-| 5100h:1/2/3/4 | Battery V / battery A / capacitor V / heatsink °C | 0.0625 V/A scales |
+| 5100h:1/2/3/4 | Battery V / battery A / heatsink °C / capacitor V | 0.0625 V/A scales |
 | 5110h | NMT state | 4 stopped, 5 operational, 127 pre-op |
 | 5300h:1/2/3 | Active fault count / select / id | live fault list |
 | 5310h | General abort reason | Table 33 code after SDO abort `08000000h` |
 | 5610h:1/2 | Event id → text | write id, read controller description |
 | 5620h | Configuration checksum | |
+| 5630h | Installed object-table metadata | `dev.discover_dictionary()`; only the table cursor is written |
 | 5900h | Physical layer (bitrate) | Gen4 default 1 Mbit/s |
 | 2020h/2021h/2040h/2060h | Motor drive VPDO images (left/right/pump/steer) | torque/velocity/controlword/statusword images |
 | 21xxh–2xxxh | Switches, profiles, limits, protection | use `dev.search()` |
@@ -49,11 +50,19 @@ SCALING unless noted.
 | --- | --- | --- |
 | 6040h | Controlword | rww; commands in `drive.command_bits` |
 | 6041h | Statusword | ro; states in `drive.decode_state` |
-| 6060h / 6061h | Mode selection / display | 3 speed, 4 torque, 5 voltage (Sevcon); pre-op write |
+| 6060h / 6061h | Mode selection / display | speed 3, torque 4; EDS lists voltage 5 but its HighLimit excludes it; pre-op write |
 | 6071h / 6072h | Target / max torque | 0.1 % of peak |
 | 6074h / 6076h / 6077h / 6078h | Torque demand / peak / actual / current | feedbacks |
 | 2900h | Traction control mode | 0 torque/speed, 1 closed-loop speed; keep consistent with 6060h |
 
-Objects the manual mentions but the EDS lacks (6042h, 6046h, 1003h, …)
-raise `ObjectDictionaryError`. Fault ids are listed in
-`tables.GEN4_FAULTS` (`faults.search("<text>")`).
+The optional dictionary adds 89 source-backed definitions, including `291Fh`
+creep torque, seat braking, motor nameplate/maps and automatic configuration.
+Select it with `gen4_od(include_supplemental=True)` or `--supplemental`.
+Its definitions come from another firmware and never override baseline
+entries. Creep torque has ratio scaling `0.001`, so physical `0.05` means 5%.
+Other firmware differences require a matching custom EDS/DCF.
+
+See [coverage](COVERAGE.md) for every explicit manual reference and remaining
+schema gaps. Unknown typed keys raise `ObjectDictionaryError`; raw SDO access
+can address entries without local metadata. Fault ids are listed in
+`tables.GEN4_FAULTS` via `faults.search("<text>")`.

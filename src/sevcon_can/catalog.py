@@ -26,6 +26,12 @@ def build_catalog(od: ObjectDictionary, *,
         "required_auth_level": var.access_level, "preop_only": var.preop_only,
         "data_type": var.data_type, "scaling": var.scaling, "units": var.units,
         "pdo_mappable": var.pdo_mappable,
+        "low": var.low, "high": var.high, "labels": dict(var.labels),
+        "bitfields": [{"name": field.name, "mask": field.mask, "shift": field.shift,
+                       "low": field.low, "high": field.high, "labels": dict(field.labels)}
+                      for field in var.bitfields],
+        "category": var.category, "section": var.section, "tag": var.tag,
+        "eeprom": var.eeprom, "extra": dict(var.extra),
     } for var in variables}
     levels = sorted(set(range(6)) | {
         var.access_level for var in variables if var.access_level is not None})
@@ -81,7 +87,10 @@ def write_catalog(path, od: ObjectDictionary, *, tpdo_configurations=None) -> di
     catalog = build_catalog(od, tpdo_configurations=tpdo_configurations)
     lines = ['"""Generated Sevcon lookup dictionaries. Regenerate rather than edit.',
              '', 'Keys are (index, subindex); descriptions are EDS names and units.',
-             'Authorization metadata governs writes, not read visibility.',
+             'Authorization metadata preflights writes; controller read permissions may differ.',
+             'Optional firmware definitions retain SUPPLEMENTAL_SOURCE and',
+             'FIRMWARE_DEPENDENT in OBJECT_METADATA[key]["extra"]. Inclusion',
+             'does not establish support on the connected controller.',
              'WRITABLE_BY_AUTH_LEVEL is cumulative and includes writable entries',
              'without an EDS level restriction. Pre-operational rules still apply.',
              'TPDO_OBJECTS includes disabled mappings; STREAM_OBJECTS includes only',

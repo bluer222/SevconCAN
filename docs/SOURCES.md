@@ -38,6 +38,13 @@ verifies offline) and extracts text with `pdftotext -layout`.
 | `specs/od/Gen4-110V-300A-rev0x00010026-a.dcf` | DCF dump from a real 110 V/300 A unit |
 | `specs/od/Gen4-110V-300A-rev0x00010026-b.dcf` | same, pre-operational capture |
 | `specs/od/Gen4-110V-300A-rev0x00010015.dcf` | older firmware rev `0x00010015` dump |
+| `specs/od/Gen4-AC24ls-rev0x00010017.dcf` | Sevcon-generated field DCF, product `0x07065037`, revision `0x00010017`, [pinned original](https://gist.githubusercontent.com/kasparsd/1e164f0f9ad1a61448a96deb7bd0682c/raw/8733cd63aadb74b0bd7c47054183b72963e0cc55/AC24ls.dcf); defines `291Fh` creep torque |
+
+`tools/generate_supplement.py` extracts 89 missing definitions from AC24ls
+into the optional packaged `Gen4-supplement.eds`. It strips vehicle parameter
+values, preserves metadata and source identity, and never replaces baseline
+entries. The optional result is a mixed catalog, not an exact firmware EDS.
+Conflicting definitions must be selected through a matching custom dictionary.
 
 ## Independent field implementations (cross-checks)
 
@@ -48,6 +55,7 @@ verifies offline) and extracts text with `pdftotext -layout`.
 | `specs/extra/ovms-rt_sevcon_faults.cpp` | fault table + EMCY fault-id byte offsets |
 | `specs/extra/victron-sevcon.c` | fault table + EMCY decoding (`mdata[3]\|mdata[4]<<8`) |
 | `specs/extra/victron-sevcon_gen4.py` | `5100h` 0.0625 scaling, EMCY example |
+| `specs/extra/ovms-dcf-download.pl` | [OVMS implementation](https://github.com/openvehicles/Open-Vehicle-Server/blob/master/clients/diagmode/dcf_download.pl) of zero-based `5630h` enumeration and internal datatype/access codes |
 | `specs/extra/fault-codes/fault codes.xlsx` | authoritative Sevcon fault table (2013) |
 | `specs/extra/SEVCON-GEN4-Calculs-tensions-batteries.xlsx` | battery threshold calculator (reference) |
 

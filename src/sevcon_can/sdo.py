@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import math
 import struct
 from contextlib import asynccontextmanager
 from typing import Callable, List, Optional
@@ -101,8 +102,8 @@ class SdoClient:
             raise ValueError("node id must be 1..127")
         if not 1 <= block_size <= 127:
             raise ValueError("block size must be 1..127")
-        if timeout <= 0:
-            raise ValueError("timeout must be positive")
+        if not math.isfinite(timeout) or timeout <= 0:
+            raise ValueError("timeout must be finite and positive")
         self.network = network
         self.node_id = node_id
         #: client -> server (request) COB-ID
@@ -114,6 +115,7 @@ class SdoClient:
         self._rx_can_id = cob_id_can_id(self.rx_cob_id)
         self._tx_can_id = cob_id_can_id(self.tx_cob_id)
         self.timeout = timeout
+        self._transfer_timeout: Optional[float] = None
         self.block_size = block_size
         self._closed = False
         self._lock = asyncio.Lock()
@@ -136,7 +138,9 @@ class SdoClient:
 
     async def _recv(self, index: int, subindex: int, timeout: Optional[float] = None) -> bytes:
         try:
-            frame = await self._rx.get(self.timeout if timeout is None else timeout)
+            if timeout is None:
+                timeout = self._transfer_timeout if self._transfer_timeout is not None else self.timeout
+            frame = await self._rx.get(timeout)
         except TimeoutError:
             try:
                 await self._send(abort_frame(index, subindex, ABORT_TIMEOUT))
@@ -150,13 +154,16 @@ class SdoClient:
         return frame.data
 
     @asynccontextmanager
-    async def _transfer(self, index: int, subindex: int):
+    async def _transfer(self, index: int, subindex: int, timeout: Optional[float] = None):
         # Cancellation must release the server's segmented/block transfer state.
         # Abort while holding the lock so the next caller cannot race cleanup.
+        if timeout is not None and (not math.isfinite(timeout) or timeout <= 0):
+            raise ValueError("timeout must be finite and positive")
         async with self._lock:
             if self._closed:
                 raise TransportError("SDO client is closed")
             self._rx.clear()
+            self._transfer_timeout = timeout
             try:
                 yield
             except asyncio.CancelledError:
@@ -165,6 +172,8 @@ class SdoClient:
                 except TransportError:
                     pass
                 raise
+            finally:
+                self._transfer_timeout = None
 
     def _check_abort(self, resp: bytes, index: int, subindex: int) -> None:
         if resp[0] == 0x80:
@@ -181,9 +190,13 @@ class SdoClient:
         return struct.unpack_from("<HB", resp, 1) == (index, subindex)
 
     # ---- upload ----
-    async def upload(self, index: int, subindex: int, *, block: bool = False) -> bytes:
-        """Read an object. ``block=True`` uses block upload (with CRC)."""
-        async with self._transfer(index, subindex):
+    async def upload(self, index: int, subindex: int, *, block: bool = False,
+                     timeout: Optional[float] = None) -> bytes:
+        """Read an object, optionally overriding this transfer's response timeout.
+
+        ``block=True`` uses block upload with CRC.
+        """
+        async with self._transfer(index, subindex, timeout):
             if block:
                 return await self._block_upload(index, subindex)
             await self._send(_frame(b"\x40", _mux(index, subindex)))
@@ -279,11 +292,12 @@ class SdoClient:
 
     # ---- download ----
     async def download(self, index: int, subindex: int, data: bytes, *,
-                       force_segmented: bool = False, block: bool = False) -> None:
+                       force_segmented: bool = False, block: bool = False,
+                       timeout: Optional[float] = None) -> None:
         """Write an object. Up to 4 bytes go expedited unless
         ``force_segmented``; ``block=True`` uses block download (with CRC)."""
         data = bytes(data)
-        async with self._transfer(index, subindex):
+        async with self._transfer(index, subindex, timeout):
             if block:
                 await self._block_download(index, subindex, data)
                 return

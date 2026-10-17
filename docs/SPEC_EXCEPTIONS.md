@@ -40,12 +40,14 @@ as `spec_parser.py` symbols.
 * **Table 2 (voltage ranges) wraps "a to b" upper bounds** onto the
   next line. Upper bounds are filled in column order
   (`parse_gen4_voltage_ranges`).
-* **EDS vs manual object coverage.** The manual references objects by
-  `XXXXh` in prose that do not exist in the bundled EDS (e.g. 6042h,
-  6046h velocity-mode objects, 1003h pre-defined error field). The
-  client raises `ObjectDictionaryError` for those; only EDS objects are
-  addressable. `parse_object_references` inventories every prose
-  reference for review.
+* **EDS vs manual object coverage.** The manuals reference objects absent
+  from the bundled EDS, including `291Fh` creep torque. The optional
+  supplement supplies verified definitions from another firmware without
+  replacing baseline entries. Unknown typed keys raise
+  `ObjectDictionaryError`; raw SDO access remains available. The generated
+  [coverage report](COVERAGE.md) accounts for explicit indices and attached
+  subindices, including unresolved schemas. It does not infer implicit
+  prose back-references or prove installed firmware support.
 * **EDS 1018h:2 default (`0x0101503C`) differs from the EDS
   DeviceInfo ProductNumber (`0x07055037`).** Both are real: the former
   is the live identity object (unit/family code), the latter the file
@@ -98,3 +100,23 @@ as `spec_parser.py` symbols.
   protocol code supports extended frames, while `configure_pdo()` obeys
   the selected EDS. Tests requiring extended configuration explicitly use
   a synthetic dictionary with the applicable limit widened.
+
+## Findings from the repeated coverage audit
+
+* **Lowercase references were omitted.** The old reference scanner missed
+  `291fh` and application-note `0xXXXX` addresses. Both forms are now scanned.
+* **Signed range boundary is one too high.** Motor temperature parameters
+  `4621h:3/4/5` declare INTEGER16 limits `-32768..32768`. Treating `32768`
+  as raw two's complement collapsed the allowed range to `-32768`.
+  `Variable.raw_limits()` clamps this exact full-range boundary to `32767`.
+  Genuine two's-complement negative limits retain their meaning. Successful
+  target reads of 120, 100 and 0 exposed the defect.
+* **Enum labels exceed limits.** `6060h` labels voltage mode 5 while declaring
+  HighLimit 4; `5900h:2` labels values beyond its HighLimit. Labels and numeric
+  writes now obey the same range checks. No capability is inferred from an
+  inconsistent label alone.
+* **Read permissions depend on firmware.** EDS readable access describes the
+  operation, not a promise that a logged-out controller will permit it. The
+  first target dump returned 586 access-level aborts; engineering login
+  reduced that to three. Local ACCESS_LEVEL metadata preflights writes;
+  reads still report controller permission errors.

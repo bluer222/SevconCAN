@@ -461,11 +461,13 @@ def parse_gen4_voltage_ranges(text: str) -> List[VoltageRange]:
     return [VoltageRange(labels[i], conv[i][0], conv[i][1], lim[i][0], lim[i][1], over[i]) for i in range(5)]
 
 
-_OBJ_REF_RE = re.compile(r"(?<![0-9A-Za-z])([1-6][0-9A-F]{3})\s?h(?![a-z])")
+_OBJ_REF_RE = re.compile(
+    r"(?<![0-9A-Za-z])(?:([1-6][0-9A-F]{3})\s?h(?![a-z])"
+    r"|0x([1-6][0-9A-F]{3})(?![0-9A-Za-z]))", re.IGNORECASE)
 
 
 def parse_object_references(text: str) -> Dict[int, List[str]]:
-    """Every ``XXXXh`` object reference in prose -> context snippets.
+    """Every ``XXXXh`` or ``0xXXXX`` reference in prose -> context snippets.
 
     Only 1000h-6FFFh (the communication, manufacturer and profile areas) is
     scanned, and ``41X0h``-style templates are excluded by the pattern.
@@ -473,7 +475,7 @@ def parse_object_references(text: str) -> Dict[int, List[str]]:
     refs: Dict[int, List[str]] = {}
     for ln in text.splitlines():
         for m in _OBJ_REF_RE.finditer(ln):
-            idx = int(m.group(1), 16)
+            idx = int(m.group(1) or m.group(2), 16)
             refs.setdefault(idx, []).append(ln.strip())
     return refs
 

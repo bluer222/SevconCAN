@@ -7,7 +7,7 @@ TPDO) and a mapping record (``1600h..1604h`` / ``1A00h..1A04h``):
 * comm sub 1: COB-ID (bit 31 clear = valid; bits 0-10 the CAN id).
   EDS defaults such as ``0x80000202`` mean "disabled" (bit 31 set).
 * comm sub 2: transmission type (0 = acyclic sync, 1..240 = every nth
-  SYNC, 254/255 = event driven).
+  SYNC, 252/253 = RTR-only TPDO, 254/255 = event driven).
 * comm sub 3: inhibit time (100 us steps, TPDO).
 * comm sub 5: event timer (ms, TPDO; 0 = disabled).
 * mapping sub 0: number of mapped objects; sub 1-8: one u32 each,
@@ -43,6 +43,8 @@ COB_ID_RTR_BIT = 0x40000000
 TRANSMISSION_TYPES = {
     0: "acyclic (sync)",
     **{n: f"every {n}th SYNC" for n in range(1, 241)},
+    252: "RTR only (sync)",
+    253: "RTR only (event driven)",
     254: "event (manufacturer specific)",
     255: "event (device profile specific)",
 }
@@ -126,11 +128,19 @@ def validate_mapping(mapping: Sequence[MappingEntry]) -> None:
 
 
 def _expected_bits(od: ObjectDictionary, index: int, subindex: int) -> Optional[int]:
+    if 1 <= index <= 7 and subindex == 0:
+        return dt.bit_length(index)
     try:
         var = od.variable((index, subindex))
     except ObjectDictionaryError:
         return None
     return dt.bit_length(var.data_type)
+
+
+def is_dummy_mapping(od: ObjectDictionary, index: int, subindex: int, bits: int) -> bool:
+    """A supported RPDO padding entry names a basic data type at subindex 0."""
+    return (1 <= index <= 7 and subindex == 0 and od.dummy_usage.get(index, False)
+            and bits == dt.bit_length(index))
 
 
 def decode_pdo(data: bytes, mapping: Sequence[MappingEntry],
@@ -206,6 +216,8 @@ def decode_sync_counter(data: bytes) -> Optional[int]:
     if len(data) == 0:
         return None
     if len(data) == 1:
+        if not 1 <= data[0] <= 240:
+            raise ProtocolError("SYNC counter must be 1..240")
         return data[0]
     raise ProtocolError(f"SYNC payload must be 0-1 bytes, got {len(data)}")
 

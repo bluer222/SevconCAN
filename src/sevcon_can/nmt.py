@@ -115,14 +115,17 @@ class HeartbeatMonitor:
         self.network = network
         self.last: Dict[int, HeartbeatEvent] = {}
         self._subs = []
-        self._waiters: Dict[int, list[asyncio.Queue[HeartbeatEvent]]] = {}
+        self._waiters: Dict[int, list[asyncio.Queue[Optional[HeartbeatEvent]]]] = {}
+        self._error: Optional[BaseException] = None
 
     def watch(self, node_id: int) -> None:
+        if self._error is not None:
+            raise TransportError(f"heartbeat monitor stopped: {self._error}") from self._error
         if not 1 <= node_id <= 127:
             raise ValueError("node id must be 1..127")
         if node_id in self._waiters:
             return
-        queues: list[asyncio.Queue[HeartbeatEvent]] = []
+        queues: list[asyncio.Queue[Optional[HeartbeatEvent]]] = []
 
         def on_frame(frame: CanFrame, node_id: int = node_id) -> None:
             try:
@@ -136,12 +139,17 @@ class HeartbeatMonitor:
                     queue.get_nowait()
                 queue.put_nowait(event)
 
+        on_frame.on_network_error = self.on_network_error
         self._subs.append(network_subscribe(self.network, HEARTBEAT_BASE + node_id, on_frame))
         self._waiters[node_id] = queues
 
     def unwatch(self, node_id: int) -> None:
         queue = self._waiters.pop(node_id, None)
         if queue is not None:
+            for waiter in queue:
+                if waiter.full():
+                    waiter.get_nowait()
+                waiter.put_nowait(None)
             for i, sub in enumerate(self._subs):
                 if getattr(sub, "_hb_node", None) == node_id:
                     sub.cancel()
@@ -163,13 +171,17 @@ class HeartbeatMonitor:
         current = self.last.get(node_id)
         if current is not None and current.state == state and (since is None or current.timestamp >= since):
             return current
-        queue: asyncio.Queue[HeartbeatEvent] = asyncio.Queue(maxsize=256)
+        queue: asyncio.Queue[Optional[HeartbeatEvent]] = asyncio.Queue(maxsize=256)
         queues = self._waiters[node_id]
         queues.append(queue)
         try:
             async def _wait() -> HeartbeatEvent:
                 while True:
                     event = await queue.get()
+                    if event is None:
+                        raise TransportError(
+                            f"heartbeat monitor stopped: {self._error or 'node is no longer watched'}"
+                        ) from self._error
                     if event.state == state and (since is None or event.timestamp >= since):
                         return event
 
@@ -182,7 +194,18 @@ class HeartbeatMonitor:
             if queue in queues:
                 queues.remove(queue)
 
+    def on_network_error(self, error: BaseException) -> None:
+        if self._error is not None:
+            return
+        self._error = error
+        for queues in self._waiters.values():
+            for queue in queues:
+                if queue.full():
+                    queue.get_nowait()
+                queue.put_nowait(None)
+
     def close(self) -> None:
+        self.on_network_error(TransportError("heartbeat monitor is closed"))
         for sub in self._subs:
             sub.cancel()
         self._subs.clear()

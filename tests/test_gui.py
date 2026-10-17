@@ -119,6 +119,33 @@ class TestGui(unittest.TestCase):
         back = post(self.base + "/api/get", {"index": "0x6071", "sub": "0"})
         self.assertEqual(back["value"], 10.0)
 
+    def test_binary_get_set_and_watch_are_json_serializable(self):
+        post(self.base + "/api/login", {"password": "0x4BDF"})
+        written = post(self.base + "/api/set",
+                       {"index": "0x4617", "sub": "1", "value": "hex:00 ff 10"})
+        self.assertEqual(written["value"], {"hex": "00ff10"})
+        reading = post(self.base + "/api/get", {"index": "0x4617", "sub": "1"})
+        self.assertEqual(reading["value"], {"hex": "00ff10"})
+        try:
+            post(self.base + "/api/add", {"index": "0x4617", "sub": "1"})
+            with urllib.request.urlopen(self.base + "/api/live", timeout=10) as response:
+                data = json.loads(response.read())
+            row = next(row for row in data["rows"] if (row["index"], row["sub"]) == (0x4617, 1))
+            self.assertEqual(row["value"], {"hex": "00ff10"})
+        finally:
+            self.agent.rows.remove((0x4617, 1))
+
+    def test_search_metadata_finds_bitfields_without_can_traffic(self):
+        from unittest.mock import AsyncMock
+        with patch.object(self.agent.dev, "read_raw", new_callable=AsyncMock) as read:
+            matches = post(self.base + "/api/search", {"query": "Idling Creep Torque"})
+            read.assert_not_called()
+        by_key = {(row["index"], row["sub"]): row for row in matches}
+        self.assertIn((0x2911, 1), by_key)
+        self.assertIn("Idling Creep Torque", by_key[(0x2911, 1)]["accepts"])
+        matches = post(self.base + "/api/search", {"query": ""})
+        self.assertEqual(len(matches), len(list(self.agent.dev.od.variables())))
+
     def test_errors_are_json(self):
         resp = post(self.base + "/api/get", {"index": "0x9999", "sub": "0"})
         self.assertIn("error", resp)
@@ -157,6 +184,20 @@ class TestGui(unittest.TestCase):
 
 
 class TestAgentLifecycle(unittest.TestCase):
+    def test_supplemental_search_and_rows_show_firmware_source(self):
+        from sevcon_can.od import gen4_od
+        agent = gui.Agent(0x20, sim=True, od=gen4_od(include_supplemental=True)).start()
+        try:
+            matches = agent.call(agent.search_objects, "Creep Torque")
+            creep = next(row for row in matches if row["index"] == 0x291F)
+            self.assertIn("Firmware dependent", creep["provenance"])
+            self.assertIn("Gen4-AC24ls-rev0x00010017.dcf", creep["provenance"])
+            agent.rows.append((0x291F, 0))
+            rows = agent.call(agent.describe_rows)
+            self.assertIn(creep, rows)
+        finally:
+            agent.stop()
+
     def test_custom_dictionary_and_clean_shutdown(self):
         from sevcon_can.od import gen4_od
         od = gen4_od()

@@ -176,6 +176,12 @@ SOURCES: List[Source] = [
         "Sevcon-generated EDS, product 0x07055037 rev 0x00010026",
     ),
     Source(
+        "Gen4-AC24ls-rev0x00010017.dcf", "od",
+        ("https://gist.githubusercontent.com/kasparsd/1e164f0f9ad1a61448a96deb7bd0682c/"
+         "raw/8733cd63aadb74b0bd7c47054183b72963e0cc55/AC24ls.dcf",),
+        "Sevcon-generated AC24ls DCF, product 0x07065037 rev 0x00010017; includes creep torque",
+    ),
+    Source(
         "Gen4-110V-300A-rev0x00010026-a.dcf", "od",
         (f"{_GH}/documents/2019-06-13-ME0913-0705-0013-GEN4-110V-300A-PARINAUTES-Ok-a-vide-19h39.dcf",),
         "DCF dump, Gen4 110V 300A, firmware rev 0x00010026",
@@ -207,6 +213,12 @@ SOURCES: List[Source] = [
     Source(
         "ovms-rt_sevcon.cpp", "extra", (f"{_OVMS}/rt_sevcon.cpp",),
         "OVMS Renault Twizy Gen4 client: login (5000h), NMT state (5110h)",
+    ),
+    Source(
+        "ovms-dcf-download.pl", "extra",
+        ("https://raw.githubusercontent.com/openvehicles/Open-Vehicle-Server/master/"
+         "clients/diagmode/dcf_download.pl",),
+        "OVMS installed Sevcon OD enumeration through 5630h, including internal datatype codes",
     ),
     Source(
         "ovms-rt_sevcon.h", "extra", (f"{_OVMS}/rt_sevcon.h",),

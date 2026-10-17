@@ -28,6 +28,8 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--interop", action="store_true",
                         help="also require the independent canopen/python-can gate")
+    parser.add_argument("--require-complete", action="store_true",
+                        help="also fail on documented functions with unresolved definitions")
     args = parser.parse_args()
     failures = 0
 
@@ -37,6 +39,17 @@ def main() -> int:
 
     print("== tables freshness ==")
     if run("tools/generate_tables.py", "--check") != 0:
+        failures += 1
+
+    print("== supplemental dictionary freshness ==")
+    if run("tools/generate_supplement.py", "--check") != 0:
+        failures += 1
+
+    print("== documented function coverage ==")
+    coverage_args = ["tools/audit_coverage.py", "--check"]
+    if args.require_complete:
+        coverage_args.append("--require-complete")
+    if run(*coverage_args) != 0:
         failures += 1
 
     print("== test suite ==")

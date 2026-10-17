@@ -85,7 +85,7 @@ class TestCyclic(unittest.TestCase):
                 HeartbeatProducer(net, node_id)
         with self.assertRaises(ValueError):
             HeartbeatProducer(net, 1, state=0)
-        for overflow in (0, 241):
+        for overflow in (0, 1, 241):
             with self.assertRaises(ValueError):
                 SyncProducer(net, counter_overflow=overflow)
         with self.assertRaises(ValueError):

@@ -94,6 +94,17 @@
       "https://raw.githubusercontent.com/brtiberio/Sevcon_gen4/master/documents/2019-06-25-ME0913-0705-0013-GEN4-110V-300A-KES-Ok-a-vide-10h11-Pre-Op.dcf"
     ]
   },
+  "Gen4-AC24ls-rev0x00010017.dcf": {
+    "description": "Sevcon-generated AC24ls DCF, product 0x07065037 rev 0x00010017; includes creep torque",
+    "fetched_on": "2026-10-16",
+    "file": "specs/od/Gen4-AC24ls-rev0x00010017.dcf",
+    "origin": "https://gist.githubusercontent.com/kasparsd/1e164f0f9ad1a61448a96deb7bd0682c/raw/8733cd63aadb74b0bd7c47054183b72963e0cc55/AC24ls.dcf",
+    "sha256": "72fe2daec708dee84e2ea9d93548cb06493e970c78d4b38dc9838a5b4d12c09e",
+    "size": 465396,
+    "urls": [
+      "https://gist.githubusercontent.com/kasparsd/1e164f0f9ad1a61448a96deb7bd0682c/raw/8733cd63aadb74b0bd7c47054183b72963e0cc55/AC24ls.dcf"
+    ]
+  },
   "Gen4-Datasheet-Size-2-4-6-2016": {
     "description": "Gen4 Size 2/4/6 datasheet, July 2016",
     "fetched_on": "2026-10-02",
@@ -251,6 +262,17 @@
     ],
     "urls": [
       "https://raw.githubusercontent.com/brtiberio/Sevcon_gen4/master/documents/fault%20codes.rar"
+    ]
+  },
+  "ovms-dcf-download.pl": {
+    "description": "OVMS installed Sevcon OD enumeration through 5630h, including internal datatype codes",
+    "fetched_on": "2026-10-16",
+    "file": "specs/extra/ovms-dcf-download.pl",
+    "origin": "https://raw.githubusercontent.com/openvehicles/Open-Vehicle-Server/master/clients/diagmode/dcf_download.pl",
+    "sha256": "1f22e98cc84a19afcb3d1d653f6512e32e20a6c0c4351db7ba8c22fbfb5912ed",
+    "size": 10067,
+    "urls": [
+      "https://raw.githubusercontent.com/openvehicles/Open-Vehicle-Server/master/clients/diagmode/dcf_download.pl"
     ]
   },
   "ovms-rt_sevcon.cpp": {

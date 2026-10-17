@@ -39,7 +39,7 @@ from sevcon_can import __version__  # noqa: E402
 from sevcon_can.descriptions import describe  # noqa: E402
 from sevcon_can.exceptions import SevconError  # noqa: E402
 from sevcon_can.nmt import state_name  # noqa: E402
-from sevcon_can.od import load_eds  # noqa: E402
+from sevcon_can.od import gen4_od, load_eds  # noqa: E402
 from sevcon_can.cli import backend_options  # noqa: E402
 
 #: Default table rows: (index, sub).
@@ -183,33 +183,33 @@ class Agent:
             except SevconError as e:
                 out["rows"].append({"index": index, "sub": sub, "error": str(e)})
                 continue
-            label = reading.label if isinstance(reading.label, str) else None
             out["rows"].append({
                 "index": index, "sub": sub,
                 "path": reading.variable.path,
                 "access": reading.variable.access,
                 "unit": reading.variable.units,
-                "value": reading.physical if not isinstance(
-                    reading.physical, float) else round(reading.physical, 4),
-                "label": label,
+                "value": _json_value(reading.physical if not isinstance(
+                    reading.physical, float) else round(reading.physical, 4)),
+                "label": _json_value(reading.label),
             })
         return out
 
     async def describe_rows(self) -> List[Dict[str, Any]]:
         """Static metadata for the table (names, access, units, accepted values)."""
-        from sevcon_can.descriptions import accepts_text
         assert self.dev is not None
         meta = []
         for index, sub in self.rows:
             try:
                 var = self.dev.variable((index, sub))
-                meta.append({"index": index, "sub": sub, "path": var.path,
-                             "access": var.access, "unit": var.units,
-                             "labels": sorted(var.labels.values())[:8],
-                             "accepts": accepts_text(var)})
+                meta.append(_variable_metadata(var))
             except SevconError as e:
                 meta.append({"index": index, "sub": sub, "error": str(e)})
         return meta
+
+    async def search_objects(self, query: str) -> List[Dict[str, Any]]:
+        """Search metadata only; this does not send CAN frames."""
+        assert self.dev is not None
+        return [_variable_metadata(var) for var in self.dev.search(query)]
 
     async def start_dump(self) -> Dict[str, Any]:
         if self._dump_task is not None and not self._dump_task.done():
@@ -309,6 +309,15 @@ def _json_value(value):
     return value
 
 
+def _variable_metadata(var) -> Dict[str, Any]:
+    from sevcon_can.descriptions import accepts_text, source_text
+    return {"index": var.index, "sub": var.subindex, "path": var.path,
+            "access": var.access, "unit": var.units,
+            "labels": sorted(var.labels.values()), "accepts": accepts_text(var),
+            "required_auth_level": var.access_level, "preop_only": var.preop_only,
+            "extra": dict(var.extra), "provenance": source_text(var)}
+
+
 # ---------------------------------------------------------------------------
 # HTTP layer
 # ---------------------------------------------------------------------------
@@ -328,6 +337,7 @@ td.val{font-family:ui-monospace,monospace;min-width:130px}
 button{cursor:pointer}.err{color:#a00}.ok{color:#070}
 .forms{display:flex;flex-wrap:wrap;gap:16px;margin-top:12px;align-items:end}
 form{border:1px solid #bbb;padding:8px}
+#searchF{margin-top:16px}#searchF input{width:min(60vw,480px)}
 </style></head><body>
 <h2>Sevcon Gen4 <span class="muted">node __NODE__</span></h2>
 <div id="live">connecting…</div>
@@ -353,6 +363,11 @@ password <input class="num" name="password" placeholder="0x4BDF" required>
 <button name="how" value="op">Operational</button></form>
 </div>
 <div id="msg"></div>
+<form id="searchF"><label for="objectQuery">Find parameter by name, address, tag or bit field</label><br>
+<input type="text" id="objectQuery" name="query" placeholder="creep, torque, 291F or STATUSWORD">
+<button>Search</button> <button type="button" id="allObjectsB">List all parameters</button>
+<span id="searchStatus" role="status"></span></form>
+<div id="searchResults"></div>
 <script>
 const rows=__ROWS__;
 function esc(s){return String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
@@ -360,7 +375,8 @@ function build(){
  document.getElementById("rows").innerHTML=rows.map((r,i)=>{
   const ro=r.access==="ro"||r.access==="const", wo=r.access==="wo";
   return `<tr><td>${esc(r.path||("0x"+r.index.toString(16)+":"+r.sub))}`+
-  `<br><span class="muted">0x${r.index.toString(16)}:${r.sub} ${r.unit?esc(r.unit):""}</span></td>`+
+  `<br><span class="muted">0x${r.index.toString(16)}:${r.sub} ${r.unit?esc(r.unit):""}</span>`+
+  `${r.provenance?`<br><span class="muted">${esc(r.provenance)}</span>`:""}</td>`+
   `<td>${r.access||"?"}</td>`+
   `<td class="muted">${esc(r.accepts||"–")}</td>`+
   `<td class="val" id="last${i}">–</td>`+
@@ -398,7 +414,29 @@ async function doSet(i){
   st.innerHTML='<span class="ok">ok</span>';
  }catch(e){st.innerHTML='<span class="err">'+esc(e)+"</span>";}
 }
-function fmt(d){return d.value+(d.unit?" "+d.unit:"")+(d.label?" ("+d.label+")":"");}
+function fmt(d){
+ const value=d.value&&typeof d.value==="object"&&"hex" in d.value?"hex:"+d.value.hex:d.value;
+ const label=d.label&&typeof d.label==="object"?JSON.stringify(d.label):d.label;
+ return value+(d.unit?" "+d.unit:"")+(label?" ("+label+")":"");
+}
+async function findObjects(query){
+ const status=document.getElementById("searchStatus"),box=document.getElementById("searchResults");
+ status.textContent="Searching…";
+ try{const d=await api("/api/search",{query});if(d.error)throw Error(d.error);
+  status.textContent=d.length+" parameters";
+  box.innerHTML=d.length?`<table><thead><tr><th>Parameter</th><th>Access and requirements</th><th>Accepts</th><th></th></tr></thead><tbody>`+
+   d.map(r=>`<tr><td>${esc(r.path)}<br><span class="muted">0x${r.index.toString(16)}:${r.sub}</span>`+
+    `${r.provenance?`<br><span class="muted">${esc(r.provenance)}</span>`:""}</td>`+
+    `<td>${esc(r.access)}${r.required_auth_level!==null?"; login ≥ "+r.required_auth_level:""}${r.preop_only?"; pre-op only":""}</td>`+
+    `<td>${esc(r.accepts)}</td><td><button type="button" onclick="addFound(${r.index},${r.sub})">Watch</button></td></tr>`).join("")+`</tbody></table>`:"";
+ }catch(e){status.textContent=e.message;}
+}
+async function addFound(index,sub){
+ const d=await api("/api/add",{index,sub});
+ if(d.error)document.getElementById("msg").textContent=d.error;else location.reload();
+}
+document.getElementById("searchF").onsubmit=e=>{e.preventDefault();findObjects(document.getElementById("objectQuery").value);};
+document.getElementById("allObjectsB").onclick=()=>{document.getElementById("objectQuery").value="";findObjects("");};
 async function live(){
  try{const d=await(await fetch("/api/live")).json();
   document.getElementById("live").innerHTML=
@@ -456,11 +494,11 @@ build();live();setInterval(live,500);
 
 
 def _reading_json(dev: AsyncSevconGen4, reading) -> Dict[str, Any]:
-    label = reading.label if isinstance(reading.label, str) else None
     value = reading.physical
     if isinstance(value, float):
         value = round(value, 4)
-    return {"value": value, "unit": reading.variable.units, "label": label,
+    return {"value": _json_value(value), "unit": reading.variable.units,
+            "label": _json_value(reading.label),
             "path": reading.variable.path}
 
 
@@ -531,6 +569,8 @@ def make_handler(agent: Agent):
                 if self.path == "/api/live":
                     return self._json(agent.call(agent.snapshot))
                 data = self._body()
+                if self.path == "/api/search":
+                    return self._json(agent.call(agent.search_objects, str(data.get("query", ""))))
                 if self.path == "/api/get":
                     index, sub = int(str(data["index"]), 0), int(str(data["sub"]), 0)
                     return self._json(_reading_json(
@@ -556,10 +596,20 @@ def make_handler(agent: Agent):
                         dev.goto_preop if how == "preop" else dev.goto_operational)
                     return self._json({"state": state_name(state if state is not None else -1)})
                 if self.path == "/api/describe":
+                    from sevcon_can.descriptions import accepts_text, source_text
                     index = int(str(data["index"]), 0)
                     sub = data.get("sub")
-                    return self._json({"text": describe(
-                        index, int(str(sub), 0) if sub not in (None, "") else None)})
+                    subindex = int(str(sub), 0) if sub not in (None, "") else None
+                    text = describe(index, subindex)
+                    try:
+                        var = dev.variable(index, subindex)
+                    except SevconError:
+                        pass
+                    else:
+                        text += f"\nAccepts: {accepts_text(var)}"
+                        if source_text(var):
+                            text += f"\n{source_text(var)}"
+                    return self._json({"text": text})
                 self.send_error(404)
             except (SevconError, ValueError, KeyError) as e:
                 self._json({"error": str(e)})
@@ -587,7 +637,10 @@ def main(argv=None) -> int:
     ap.add_argument("--usb-bus", type=int)
     ap.add_argument("--usb-address", type=int)
     ap.add_argument("--serial-baudrate", type=int, default=115200)
-    ap.add_argument("--eds", help="controller-specific EDS/DCF")
+    dictionary = ap.add_mutually_exclusive_group()
+    dictionary.add_argument("--eds", help="controller-specific EDS/DCF")
+    dictionary.add_argument("--supplemental", action="store_true",
+                            help="include optional parameters from other documented firmware dictionaries")
     ap.add_argument("--node", type=lambda s: int(s, 0), default=0x20)
     ap.add_argument("--password", type=lambda s: int(s, 0), default=None)
     ap.add_argument("--sim", action="store_true", help="simulated controller")
@@ -603,7 +656,8 @@ def main(argv=None) -> int:
             options = backend_options(can_args)
         except ValueError as error:
             ap.error(str(error))
-    od = load_eds(args.eds) if args.eds else None
+    od = (load_eds(args.eds) if args.eds else
+          gen4_od(include_supplemental=True) if args.supplemental else None)
     agent = Agent(args.node, channel=args.channel, password=args.password,
                   sim=args.sim, bus_options=options, od=od).start()
     server, _ = start_server(agent, args.host, args.port)

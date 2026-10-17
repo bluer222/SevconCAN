@@ -32,6 +32,44 @@ class TestLogin(unittest.TestCase):
 
 
 class TestTypedAccess(unittest.TestCase):
+    def test_raw_hex_strings_bypass_scaling(self):
+        async def go():
+            dev, sim = create_pair()
+            async with dev, sim:
+                await dev.login(SIM_PASSWORD)
+                written = await dev.write(0x6071, 0, "0x10")
+                self.assertEqual(written.raw, 16)
+                self.assertEqual((await dev.read(0x6071, 0)).raw, 16)
+                written = await dev.write(0x6071, 0, "16")
+                self.assertEqual(written.raw, 160)
+                self.assertEqual((await dev.read(0x6071, 0)).raw, 160)
+        run(go())
+
+    def test_binary_hex_and_bytes_roundtrip(self):
+        async def go():
+            dev, sim = create_pair()
+            async with dev, sim:
+                await dev.login(SIM_PASSWORD)
+                for value in ("hex:00 ff 10", b"\x00\xff\x10"):
+                    await dev.write(0x4617, 1, value)
+                    self.assertEqual((await dev.read(0x4617, 1)).raw, b"\x00\xff\x10")
+                with self.assertRaises(ValueError):
+                    await dev.write(0x4617, 1, "not binary hex")
+        run(go())
+
+    def test_labels_obey_same_ranges_as_numbers(self):
+        async def go():
+            from unittest.mock import AsyncMock
+            dev, sim = create_pair()
+            async with dev, sim:
+                await dev.login(SIM_PASSWORD)
+                dev.write_raw = AsyncMock(wraps=dev.write_raw)
+                for value in (5, "voltage"):
+                    with self.assertRaises(ValueError):
+                        await dev.write(0x6060, 0, value)
+                dev.write_raw.assert_not_called()
+        run(go())
+
     def test_read_scaling_and_units(self):
         async def go():
             dev, sim = create_pair()
@@ -88,6 +126,52 @@ class TestTypedAccess(unittest.TestCase):
 
 
 class TestNmtState(unittest.TestCase):
+    def test_bootup_and_addressed_resets_invalidate_login_cache(self):
+        from sevcon_can.nmt import NMT_RESET_COMM, NMT_RESET_NODE
+
+        async def go():
+            dev, sim = create_pair()
+            async with dev, sim:
+                await dev.login(SIM_PASSWORD)
+                await dev.nmt.reset_node(dev.node_id)
+                await dev.heartbeat.wait_state(dev.node_id, 0, timeout=1)
+                self.assertIsNone(dev._access_level)
+                self.assertEqual(await dev.access_level(), 0)
+                for command, target in ((NMT_RESET_NODE, dev.node_id), (NMT_RESET_COMM, 0)):
+                    dev._access_level = 4
+                    dev._nmt_state = 5
+                    await dev.nmt_command(command, target)
+                    self.assertIsNone(dev._access_level)
+                    self.assertIsNone(dev._nmt_state)
+                dev._access_level = 4
+                await dev.nmt_command(NMT_RESET_NODE, dev.node_id + 1)
+                self.assertEqual(dev._access_level, 4)
+        run(go())
+
+    def test_state_transition_verification_rejects_stale_matching_cache(self):
+        from sevcon_can.exceptions import StateError
+
+        async def go():
+            dev, sim = create_pair(heartbeat_ms=0)
+            async with dev, sim:
+                await dev.login(SIM_PASSWORD)
+                original_write = sim._server.write
+                sim._server.write = lambda i, s, d: (
+                    None if (i, s) == (0x2800, 0) else original_write(i, s, d))
+                original_wait = dev.wait_nmt_state
+
+                async def bounded_wait(state):
+                    return await original_wait(state, timeout=0.05)
+
+                dev.wait_nmt_state = bounded_wait
+                for actual, stale, transition in ((5, 127, dev.goto_preop),
+                                                   (127, 5, dev.goto_operational)):
+                    sim._set_state(actual)
+                    dev._nmt_state = stale
+                    with self.assertRaises(StateError):
+                        await transition()
+        run(go())
+
     def test_preop_operational_cycle(self):
         async def go():
             dev, sim = create_pair()
@@ -141,6 +225,46 @@ class TestDrive(unittest.TestCase):
 
 
 class TestFaultsLive(unittest.TestCase):
+    def test_live_configured_emcy_subscription_and_close(self):
+        from sevcon_can.exceptions import TransportError
+
+        async def go():
+            dev, sim = create_pair()
+            async with dev, sim:
+                await dev.login(SIM_PASSWORD)
+                await dev.write(0x1014, 0, 0x321)
+                consumer = await dev.subscribe_emcy_live()
+                sim.inject_fault(0x4581)
+                notification = await asyncio.wait_for(
+                    consumer.notifications().__anext__(), 1)
+                self.assertEqual((notification.node_id, notification.fault_id),
+                                 (dev.node_id, 0x4581))
+                self.assertTrue(dev.emcy.queue.empty())
+                stream = consumer.notifications()
+                pending = asyncio.create_task(stream.__anext__())
+                await asyncio.sleep(0)
+                await dev.close()
+                with self.assertRaises(TransportError):
+                    await asyncio.wait_for(pending, 0.2)
+                with self.assertRaises(TransportError):
+                    dev.subscribe_emcy(0x321)
+        run(go())
+
+    def test_live_disabled_emcy_keeps_faults_and_rejects_subscription(self):
+        async def go():
+            dev, sim = create_pair()
+            async with dev, sim:
+                self.assertEqual((await dev.read(0x1014, 0)).raw, 0x80 + dev.node_id)
+                # A firmware dictionary may allow the CiA 301 disable bit.
+                await dev.write_raw(0x1014, 0, (0x800000A0).to_bytes(4, "little"))
+                with self.assertRaisesRegex(ValueError, "disabled"):
+                    await dev.subscribe_emcy_live()
+                sim.inject_fault(0x4581)
+                self.assertEqual(sim.sent_emcy, [])
+                self.assertEqual([fault.fault_id for fault in await dev.active_faults()],
+                                 [0x4581])
+        run(go())
+
     def test_fault_list_and_text(self):
         async def go():
             dev, sim = create_pair()

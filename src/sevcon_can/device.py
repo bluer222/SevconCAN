@@ -121,10 +121,12 @@ class AsyncSevconGen4:
         self.heartbeat = self.nmt.heartbeat
         self.heartbeat.watch(node_id)
         self.emcy = EmcyConsumer(network, node_id)
+        self._emcy_consumers: List[EmcyConsumer] = []
         self._pdos: List[_pdo.PdoConsumer] = []
         self._closed = False
         self._access_level: Optional[int] = None
         self._nmt_state: Optional[int] = None
+        self._dictionary_lock = asyncio.Lock()
         self._hb_sub = network.subscribe(
             _nmt.HEARTBEAT_BASE + node_id, self._on_heartbeat)
 
@@ -234,6 +236,8 @@ class AsyncSevconGen4:
         self._hb_sub.cancel()
         self.sdo.close()
         self.emcy.close()
+        for consumer in self._emcy_consumers:
+            consumer.close()
         self.heartbeat.close()
         for pdo in self._pdos:
             pdo.close()
@@ -252,11 +256,33 @@ class AsyncSevconGen4:
     def search(self, text: str) -> List[Variable]:
         return self.od.search(text)
 
+    def iter_dictionary_entries(self, *, start: int = 0, limit: Optional[int] = None):
+        """Iterate installed OD metadata via the Sevcon 5630h table cursor."""
+        from .discovery import iter_dictionary_entries
+        return iter_dictionary_entries(self, start=start, limit=limit)
+
+    async def discover_dictionary(self, *, start: int = 0,
+                                  limit: Optional[int] = None) -> Dict[str, Any]:
+        """Report installed OD entries, including those absent from this EDS."""
+        from .discovery import discover_dictionary
+        return await discover_dictionary(self, start=start, limit=limit)
+
     # ---- raw SDO ----
+    def _sdo_timeout(self, index: int, subindex: int) -> Optional[float]:
+        try:
+            var = self.variable((index, subindex))
+            milliseconds = float(var.extra.get("COMMS_TIMEOUT", "0"))
+        except (ObjectDictionaryError, ValueError):
+            return None
+        return max(self.sdo.timeout, milliseconds / 1000) if milliseconds > 0 else None
+
     async def read_raw(self, index: int, subindex: int) -> bytes:
-        """Read raw SDO bytes (no access checks beyond existence)."""
+        """Read SDO bytes without metadata access checks, honoring EDS timeouts."""
         self._check_open()
         try:
+            timeout = self._sdo_timeout(index, subindex)
+            if timeout is not None:
+                return await self.sdo.upload(index, subindex, timeout=timeout)
             return await self.sdo.upload(index, subindex)
         except SdoAbortError as e:
             raise await self._with_gen4_reason(e)
@@ -264,6 +290,10 @@ class AsyncSevconGen4:
     async def write_raw(self, index: int, subindex: int, data: bytes) -> None:
         self._check_open()
         try:
+            timeout = self._sdo_timeout(index, subindex)
+            if timeout is not None:
+                await self.sdo.download(index, subindex, bytes(data), timeout=timeout)
+                return
             await self.sdo.download(index, subindex, bytes(data))
         except SdoAbortError as e:
             raise await self._with_gen4_reason(e)
@@ -309,7 +339,9 @@ class AsyncSevconGen4:
 
         Strings are resolved against the object's enum labels first (so
         ``write(0x6060, 0, "torque")`` works); numeric values pass through
-        inverse SCALING and range checks. Returns the post-write
+        inverse SCALING and range checks. Hexadecimal strings such as
+        ``"0x10"`` specify raw integers. Binary objects accept bytes or
+        ``"hex:01 02"``. Returns the post-write
         :class:`Reading` interpretation (no read-back is performed).
         """
         var = self.variable(key, subindex)
@@ -319,26 +351,36 @@ class AsyncSevconGen4:
         return Reading(var, raw, var.to_physical(raw), var.describe(raw), var.units)
 
     def _coerce_write(self, var: Variable, value: Any) -> Any:
+        unscaled = False
         if isinstance(value, str):
             text = value.strip()
+            if var.data_type in (dt.OCTET_STRING, dt.DOMAIN,
+                                 dt.TIME_OF_DAY, dt.TIME_DIFFERENCE):
+                if not text.lower().startswith("hex:"):
+                    raise ValueError(f"{var.path} needs binary data, for example 'hex:01 02'")
+                return bytes.fromhex(text[4:])
+            if var.data_type in (dt.VISIBLE_STRING, dt.UNICODE_STRING):
+                return value
             if var.labels:
                 try:
-                    return var.label_to_raw(text)
+                    value = var.label_to_raw(text)
+                    unscaled = True
                 except ValueError:
                     pass
-            if var.data_type in dt.STRING_TYPES or var.data_type == dt.DOMAIN:
-                return text
-            # Numeric string in physical units ("48.5") or raw ("0x10").
-            try:
-                number: Any = float(text) if "." in text else int(text, 0)
-            except ValueError:
-                raise AccessError(
-                    f"{text!r} is not a label of {var.path}: "
-                    f"{sorted(var.labels.values())}") from None
-            value = number
+            if not unscaled:
+                try:
+                    try:
+                        value = int(text, 0)
+                    except ValueError:
+                        value = float(text)
+                except ValueError:
+                    raise AccessError(
+                        f"{text!r} is not a number or label of {var.path}: "
+                        f"{sorted(var.labels.values())}") from None
+                unscaled = text.lower().startswith(("0x", "+0x", "-0x"))
         if isinstance(value, bool):
             raw = int(value)
-        elif isinstance(value, (int, float)) and var.scaling is not None \
+        elif not unscaled and isinstance(value, (int, float)) and var.scaling is not None \
                 and var.data_type not in dt.FLOAT_TYPES:
             raw = var.from_physical(value)
         elif isinstance(value, float) and value.is_integer() and var.data_type in dt.INTEGER_TYPES:
@@ -358,7 +400,7 @@ class AsyncSevconGen4:
                 raise AccessError(
                     f"{var.path} needs login level {var.access_level} "
                     f"(current: {level}); call login() first")
-        if var.preop_only and await self.nmt_state() == _nmt.STATE_OPERATIONAL:
+        if var.preop_only and await self.nmt_state(cached=False) != _nmt.STATE_PREOP:
             raise AccessError(
                 f"{var.path} is writable only in pre-operational; "
                 "call goto_preop() first")
@@ -413,6 +455,8 @@ class AsyncSevconGen4:
         except ValueError:
             return
         self._nmt_state = state
+        if state == _nmt.STATE_BOOTUP:
+            self._access_level = None
 
     async def nmt_state(self, cached: bool = True) -> Optional[int]:
         """NMT state: live heartbeat value if seen, else ``5110h``."""
@@ -428,22 +472,26 @@ class AsyncSevconGen4:
         return state
 
     async def nmt_command(self, command: int, node_id: Optional[int] = None) -> None:
-        await self.nmt.command(command, self.node_id if node_id is None else node_id)
+        target = self.node_id if node_id is None else node_id
+        await self.nmt.command(command, target)
+        if command in (_nmt.NMT_RESET_NODE, _nmt.NMT_RESET_COMM) and target in (0, self.node_id):
+            self._access_level = None
+            self._nmt_state = None
 
     async def goto_preop(self, verify: bool = True) -> Optional[int]:
         """Force pre-operational via ``2800h = 1`` (manual section 7.3)."""
         await self.write(0x2800, 0, True)
+        self._nmt_state = None
         if verify:
             return await self.wait_nmt_state(_nmt.STATE_PREOP)
-        self._nmt_state = None
         return None
 
     async def goto_operational(self, verify: bool = True) -> Optional[int]:
         """Restore operational via ``2800h = 0``."""
         await self.write(0x2800, 0, False)
+        self._nmt_state = None
         if verify:
             return await self.wait_nmt_state(_nmt.STATE_OPERATIONAL)
-        self._nmt_state = None
         return None
 
     async def wait_nmt_state(self, state: int, timeout: float = 5.0) -> int:
@@ -484,6 +532,21 @@ class AsyncSevconGen4:
     # ---- EMCY ----
     def emcy_notifications(self) -> AsyncIterator[EmcyMessage]:
         return self.emcy.notifications()
+
+    def subscribe_emcy(self, cob_id: int) -> EmcyConsumer:
+        """Subscribe to this node's explicitly configured full 1014h COB-ID."""
+        self._check_open()
+        consumer = EmcyConsumer(self.network, self.node_id, cob_id=cob_id)
+        self._emcy_consumers.append(consumer)
+        return consumer
+
+    async def subscribe_emcy_live(self) -> EmcyConsumer:
+        """Subscribe using live 1014h, rejecting a disabled EMCY producer.
+
+        The returned consumer has its own notification queue. Subscribe again
+        after changing 1014h; device.close() closes every created consumer.
+        """
+        return self.subscribe_emcy(int((await self.read(0x1014, 0)).raw))
 
     # ---- PDO ----
     def _pdo_indices(self, is_tpdo: bool, pdo_number: int) -> Tuple[int, int]:
@@ -537,6 +600,31 @@ class AsyncSevconGen4:
         await self.network.send(CanFrame(can_id, payload,
             is_extended=bool(cob_id & _pdo.COB_ID_EXTENDED_BIT)))
 
+    async def request_tpdo(self, pdo_number: int, *, cob_id: Optional[int] = None,
+                           mapping: Optional[list] = None) -> None:
+        """Send an RTR for a TPDO that permits remote requests.
+
+        Uses the live COB-ID/mapping unless explicitly supplied. Subscribe to
+        the TPDO first to receive its response. Whether and when it responds
+        depends on the controller's transmission type and firmware support.
+        """
+        self._check_open()
+        self._pdo_indices(True, pdo_number)
+        if cob_id is None or mapping is None:
+            config = await self.read_pdo_configuration(True, pdo_number)
+            if cob_id is None:
+                cob_id = config["cob_id"]
+            if mapping is None:
+                mapping = config["mapping"]
+        if not _pdo.cob_id_valid(cob_id):
+            raise StateError(f"TPDO {pdo_number} is disabled")
+        if cob_id & _pdo.COB_ID_RTR_BIT:
+            raise StateError(f"TPDO {pdo_number} does not allow RTR requests")
+        await self.network.send(CanFrame(
+            _pdo.cob_id_can_id(cob_id), is_remote=True,
+            is_extended=bool(cob_id & _pdo.COB_ID_EXTENDED_BIT),
+            dlc=_pdo.expected_length(mapping)))
+
     async def configure_pdo(self, is_tpdo: bool, pdo_number: int, mapping: list, *,
                             cob_id: Optional[int] = None,
                             transmission_type: Optional[int] = None,
@@ -558,6 +646,11 @@ class AsyncSevconGen4:
             raise ValueError("an enabled PDO must contain at least one mapping entry")
         words = []
         for index, sub, bits in mapping:
+            if 1 <= index <= 7:
+                if is_tpdo or not _pdo.is_dummy_mapping(self.od, index, sub, bits):
+                    raise ValueError("unsupported dummy RPDO mapping")
+                words.append(_pdo.encode_mapping_word(index, sub, bits))
+                continue
             var = self.variable(index, sub)
             if not var.pdo_mappable or bits not in (dt.bit_length(var.data_type),):
                 raise ValueError(f"{var.path} is not mappable with {bits} bits")
@@ -571,7 +664,8 @@ class AsyncSevconGen4:
         changes.extend((map_index, sub, word) for sub, word in enumerate(words, 1))
         changes.append((map_index, 0, len(words)))
         if transmission_type is not None:
-            if transmission_type not in _pdo.TRANSMISSION_TYPES:
+            if transmission_type not in _pdo.TRANSMISSION_TYPES or (
+                    not is_tpdo and transmission_type in (252, 253)):
                 raise ValueError("unsupported PDO transmission type")
             changes.append((comm, 2, transmission_type))
         final = selected & ~_pdo.COB_ID_VALID_BIT if enabled else selected | _pdo.COB_ID_VALID_BIT

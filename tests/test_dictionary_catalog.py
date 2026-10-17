@@ -83,7 +83,7 @@ class TestCatalog(unittest.TestCase):
             self.assertNotIn((0x5000, 2), module.READABLE_OBJECTS)
 
     def test_committed_module_matches_bundled_eds(self):
-        for name, value in build_catalog(self.od).items():
+        for name, value in build_catalog(gen4_od(include_supplemental=True)).items():
             self.assertEqual(getattr(object_catalog, name), value, name)
 
 

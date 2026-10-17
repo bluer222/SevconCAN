@@ -93,6 +93,30 @@ class TestPdoValidation(unittest.TestCase):
             await net.close()
         asyncio.run(go())
 
+    def test_heartbeat_close_network_failure_and_unwatch_wake_all_waiters(self):
+        async def go():
+            for action in ("close", "network", "unwatch"):
+                net = Network(VirtualBus().endpoint())
+                monitor = HeartbeatMonitor(net)
+                tasks = [asyncio.create_task(monitor.wait_state(1, 5, timeout=10))
+                         for _ in range(2)]
+                await asyncio.sleep(0)
+                if action == "close":
+                    monitor.close()
+                elif action == "network":
+                    await net.close()
+                else:
+                    monitor.unwatch(1)
+                for task in tasks:
+                    with self.assertRaises(TransportError):
+                        await asyncio.wait_for(task, 0.2)
+                if action != "unwatch":
+                    with self.assertRaises(TransportError):
+                        await monitor.wait_state(1, 5)
+                monitor.close()
+                await net.close()
+        asyncio.run(go())
+
 
 class TestSdoFaults(unittest.TestCase):
     def test_empty_and_multi_block_transfers(self):

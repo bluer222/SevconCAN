@@ -8,8 +8,10 @@ exact dictionary installed on every 634A42203.
 The library implements parameter access, drive commands, faults, live PDO
 configuration, RPDO transmission, heartbeat monitoring and SYNC. Offline
 validation includes fault injection and exchanges with an independent
-CANopen stack. Physical controller and Jhoinrch USB compatibility remain
-unverified. This is not a replacement for every proprietary DVT service.
+CANopen stack. Two user-supplied physical value dumps also support SDO read
+compatibility with firmware `0705.0013`; see [target evidence](docs/TARGET_EVIDENCE.md).
+Adapter behavior and motor-control writes remain unverified. This is not a
+replacement for every proprietary DVT service.
 See [implementation status](docs/IMPLEMENTATION_STATUS.md) for coverage and
 remaining limits.
 
@@ -71,6 +73,9 @@ use physical units where the dictionary specifies a scale. Enum labels also
 work, such as `await dev.write(0x6060, 0, "torque")`. Login permissions, ranges,
 read/write access and pre-operational restrictions are checked before a
 parameter write. Range/access checks can involve read-only SDO queries.
+Use a hexadecimal string such as `"0x10"` to write a raw integer without
+scaling. Binary parameters accept bytes in Python or a string such as
+`"hex:00 ff 10"` in Python, the CLI and the GUI.
 
 Supply the credentials assigned to your controller with `login(password,
 user_id=0)`. The frequently published `0x4BDF` password comes from the OVMS
@@ -87,13 +92,49 @@ sevcon-can --channel can0 --eds controller.eds validate-identity
 sevcon-can --channel can0 --eds controller.eds encoder
 sevcon-can --channel can0 monitor --interval 1
 sevcon-can --sim shell
+sevcon-can search torque
+sevcon-can objects --json > parameter-metadata.json
+sevcon-can describe STATUSWORD
+sevcon-can --supplemental search creep
+sevcon-can --channel can0 discover --json > installed-dictionary.json
 ```
+
+`objects`, `search` and `describe` inspect dictionary metadata without opening
+the CAN adapter. Searches include bit fields and their labels. `discover`
+enumerates the connected controller's metadata table at `5630h`, reports
+entries absent from the selected dictionary, and supports `--start` and
+`--limit` for partial scans. Its JSON also lists mismatched types, versions,
+access, PDO flags and limits, and entries absent from a complete controller
+scan. It writes only the metadata cursor. It does not
+change parameter values, log in, or change NMT state. Discovered raw limits
+and internal type codes do not establish physical scaling, units, names or
+required login levels. Names in the report come from the selected dictionary.
+Keep other tools that use the same metadata cursor idle during enumeration.
+
+The default dictionary contains the original 1,340 entries. Select
+`--supplemental` to include 89 additional entries documented by other
+firmware dictionaries, including creep torque at `291Fh`. Their source,
+product and firmware revision remain visible. These optional definitions
+do not establish support on your controller. Prefer its exact `--eds` file;
+`--eds` and `--supplemental` are mutually exclusive. Python callers can use
+`gen4_od(include_supplemental=True)` for the same optional definitions.
+
+Creep torque uses the source DCF's ratio scale: `0.05` means 5%, encoded as
+raw `50`; its documented range is `0.0` to `0.5`. For an offline round trip:
+
+```sh
+sevcon-can --sim --supplemental --password 0x4BDF write CREEP_TORQUE 0 0.05
+```
+
+This validates the client codec. Your existing dumps did not request `291Fh`,
+so they do not establish whether that firmware implements creep torque.
 
 ## Importable parameter dictionaries
 
-The generated `sevcon_can.object_catalog` module contains 1,340 descriptions
-from the bundled EDS. Each description dictionary uses `(index, subindex)` keys
-and human-readable parameter paths with units as string values.
+The generated `sevcon_can.object_catalog` module contains 1,429 descriptions
+from the bundled EDS and documented supplemental definitions. Each description
+dictionary uses `(index, subindex)` keys and human-readable parameter paths
+with units as string values.
 
 ```python
 from sevcon_can.object_catalog import (
@@ -108,11 +149,16 @@ for key, description in STREAM_OBJECTS.items():
 `AUTH_LEVEL_0` through `AUTH_LEVEL_5` group entries by their exact EDS
 `ACCESS_LEVEL`. `AUTH_LEVEL_UNSPECIFIED` retains entries without that metadata.
 `BY_REQUIRED_AUTH_LEVEL` collects those groups by numeric level, with `None`
-for unspecified entries. These levels govern writes, not read visibility.
+for unspecified entries. The client uses these levels to check writes.
+A controller can also restrict reads; a readable entry's presence in a
+catalog does not grant read access.
 `WRITABLE_AUTH_LEVEL_0` through `WRITABLE_AUTH_LEVEL_5` contain writable entries
 available at each level, including lower-level entries and entries with no EDS
 level restriction. Other rules, including pre-operational-only writes, still
 apply. `READABLE_OBJECTS` and `OBJECT_METADATA` provide read access and metadata.
+`OBJECT_METADATA[key]["extra"]` identifies supplemental sources and their
+firmware product/revision. Inclusion in a generated catalog is documentation,
+not a successful read from the connected controller.
 
 `TPDO_OBJECTS` groups all mapped entries by PDO number, including disabled PDOs.
 `STREAM_OBJECTS` combines enabled TPDO mappings. The bundled defaults disable
@@ -178,6 +224,14 @@ RPDO configuration still requires pre-operational. A failed remapping write
 after the disable step leaves the PDO disabled.
 `send_rpdo()` sends raw mapped values using the live configuration;
 synchronous RPDOs apply on a later SYNC.
+`request_tpdo()` sends an RTR request with the live identifier and mapped DLC
+when the controller permits remote requests. TPDO transmission types 252 and
+253 are supported. RPDO dummy mappings use the selected EDS's `DummyUsage`
+declarations and preserve padding positions.
+
+`await dev.subscribe_emcy_live()` follows the controller's configured `1014h`
+identifier, including extended identifiers. Its consumer has a separate queue
+from the default predefined-identifier consumer.
 
 ```python
 await dev.login(your_password)
@@ -243,12 +297,19 @@ sequence. A snapshot is not a DVT DCF export or a firmware image.
 
 The localhost GUI shows live readings, faults and per-object Get/Set controls.
 It accepts the same three adapter paths and a controller-specific EDS.
+Search for a parameter by name, address, tag or bit field, then click
+**Watch** to add it to the table. **List all parameters** shows every entry
+in the selected dictionary. Add `--supplemental` to browse optional
+definitions such as creep torque; their firmware source is shown in the table.
 Each table row shows an **Accepts** column (enum options such as
-`speed (3), torque (4), voltage (5)`, or the numeric range with physical
+`speed (3), torque (4)`, or the numeric range with physical
 units) and a **?** button that explains the object in plain language.
+Labels outside the dictionary's numeric limits are marked and rejected.
+Binary readings display as `hex:...`, which can also be entered for a binary write.
 
 ```sh
 python3 tools/sevcon_gui.py --sim
+python3 tools/sevcon_gui.py --sim --supplemental
 python3 tools/sevcon_gui.py --channel can0 --node 0x20 --eds controller.eds
 python3 tools/sevcon_gui.py --backend gs_usb --usb-index 0
 python3 tools/sevcon_gui.py --backend slcan --can-port /dev/ttyACM0
@@ -282,6 +343,13 @@ retransmission, live PDO changes, drive-state transitions, adapter conversions,
 serial protocol parsing, configuration restore failures and GUI shutdown.
 These checks cannot verify electrical signaling, USB firmware, real bus
 load, or the parameters installed in your controller.
+
+The coverage audit accounts for every explicit address found in the pinned
+manufacturer texts. Run `python conformance/run.py --interop --require-complete`
+to additionally fail while a reviewed reference lacks a verified schema.
+It currently reports 34 unresolved references, listed with evidence in
+[the coverage report](docs/COVERAGE.md). Passing the ordinary software gate
+does not mean those gaps are closed.
 
 Sources and firmware ambiguities are documented in [sources](docs/SOURCES.md)
 and [specification exceptions](docs/SPEC_EXCEPTIONS.md). Generated

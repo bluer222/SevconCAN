@@ -3,7 +3,8 @@ import unittest
 
 sys.path.insert(0, "src")
 
-from sevcon_can.emcy import decode_emcy, encode_emcy
+from sevcon_can.emcy import EmcyConsumer, decode_emcy, encode_emcy
+from sevcon_can.network import Network
 from sevcon_can.nmt import (
     HEARTBEAT_BASE,
     NMT_PREOP,
@@ -19,7 +20,7 @@ from sevcon_can.pdo import (
     encode_mapping_word,
     encode_pdo,
 )
-from sevcon_can.transport import CanFrame
+from sevcon_can.transport import CanFrame, VirtualBus
 
 
 class TestNmt(unittest.TestCase):
@@ -76,6 +77,51 @@ class TestEmcy(unittest.TestCase):
         with self.assertRaises(ValueError):
             decode_emcy(CanFrame(0x80 + 1, b"\x00" * 7))
 
+    def test_configured_standard_and_extended_identifiers(self):
+        for cob_id in (0x321, 0x20000321):
+            with self.subTest(cob_id=cob_id):
+                frame = encode_emcy(0x20, 0x8130, 0x11, 0x4581, cob_id=cob_id)
+                decoded = decode_emcy(frame, 0x20, cob_id=cob_id)
+                self.assertEqual((decoded.node_id, decoded.fault_id), (0x20, 0x4581))
+                with self.assertRaises(ValueError):
+                    decode_emcy(frame)
+                net = Network(VirtualBus().endpoint())
+                consumer = EmcyConsumer(net, 0x20, cob_id=cob_id)
+                net.dispatch(CanFrame(frame.arbitration_id, frame.data,
+                                      is_extended=not frame.is_extended))
+                self.assertTrue(consumer.queue.empty())
+                net.dispatch(frame)
+                self.assertEqual(consumer.queue.get_nowait().node_id, 0x20)
+                consumer.close()
+
+    def test_configured_identifier_validation(self):
+        net = Network(VirtualBus().endpoint())
+        for cob_id in (0x800000A0, 0x400000A0, 0x12345, 0x100000000, -1):
+            with self.subTest(cob_id=cob_id):
+                with self.assertRaises(ValueError):
+                    EmcyConsumer(net, 0x20, cob_id=cob_id)
+                with self.assertRaises(ValueError):
+                    encode_emcy(0x20, 0x1000, 1, cob_id=cob_id)
+        with self.assertRaises(ValueError):
+            EmcyConsumer(net, cob_id=0x321)
+        with self.assertRaises(ValueError):
+            decode_emcy(CanFrame(0x321, bytes(8)), cob_id=0x321)
+        for node in (0, 128):
+            with self.assertRaises(ValueError):
+                EmcyConsumer(net, node)
+
+    def test_all_nodes_consumer_only_accepts_predefined_standard_emcys(self):
+        net = Network(VirtualBus().endpoint())
+        consumer = EmcyConsumer(net)
+        for frame in (CanFrame(0x321, bytes(8)),
+                      CanFrame(0xA0, bytes(8), is_extended=True),
+                      CanFrame(0xA0, is_remote=True, dlc=8)):
+            net.dispatch(frame)
+            self.assertTrue(consumer.queue.empty())
+        net.dispatch(encode_emcy(0x20, 0x1000, 1))
+        self.assertEqual(consumer.queue.get_nowait().node_id, 0x20)
+        consumer.close()
+
 
 class TestPdo(unittest.TestCase):
     MAPPING = [
@@ -109,6 +155,9 @@ class TestPdo(unittest.TestCase):
         from sevcon_can.exceptions import ProtocolError
         with self.assertRaises(ProtocolError):
             decode_sync_counter(b"\x01\x02")
+        for counter in (0, 241, 255):
+            with self.assertRaises(ProtocolError):
+                decode_sync_counter(bytes((counter,)))
 
 
 if __name__ == "__main__":

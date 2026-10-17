@@ -99,6 +99,10 @@ OBJECT_DESCRIPTIONS: Dict[int, str] = {
     0x1A00: "TPDO mapping record.",
     0x2900: ("Traction control mode: 0 = torque/speed mode, 1 = closed-loop "
              "speed control. Must agree with 6060h across nodes."),
+    0x291F: ("Creep torque applies torque when drive is selected and the throttle "
+             "is closed. The Gen4 V3.4 manual documents this at 291Fh. "
+             "Its wire type, scaling and limits come from the selected "
+             "firmware dictionary; availability depends on the installed firmware."),
     0x2C01: "Battery over-voltage protection thresholds (x0.0625 V).",
     0x2721: "Vehicle speed (x0.0625 kph).",
     0x2790: "Battery status: sub 1 = remaining charge % (BDI).",
@@ -151,14 +155,25 @@ def accepts_text(var) -> str:
     """One-line summary of what values a variable accepts, from the EDS:
     enum options, numeric limits, or the data type."""
     if var.labels:
-        return ", ".join(f"{v} ({k})" for k, v in sorted(var.labels.items()))
+        options = []
+        for raw, label in sorted(var.labels.items()):
+            text = f"{label} ({raw})"
+            try:
+                var.check_range(raw)
+            except ValueError:
+                text += " [outside EDS limits]"
+            options.append(text)
+        return ", ".join(options)
     if var.bitfields:
         return "bit fields: " + ", ".join(bf.name for bf in var.bitfields)
     from . import datatypes as dt
     dtype = dt.NAMES.get(var.data_type, f"0x{var.data_type:04X}")
+    if var.data_type in (dt.OCTET_STRING, dt.DOMAIN, dt.TIME_OF_DAY, dt.TIME_DIFFERENCE):
+        return f"{dtype}: bytes or hex:01 02"
     if var.low is not None or var.high is not None:
-        lo = var.low if var.low is not None else "…"
-        hi = var.high if var.high is not None else "…"
+        low, high = var.raw_limits()
+        lo = low if low is not None else "…"
+        hi = high if high is not None else "…"
         text = f"{dtype} {lo}…{hi}"
         if var.scaling is not None:
             phys = [float(x) * var.scaling for x in (lo, hi)
@@ -168,6 +183,16 @@ def accepts_text(var) -> str:
                 text += f" raw (= {('…'.join(f'{p:g}{unit}' for p in phys))})"
         return text
     return dtype
+
+
+def source_text(var) -> str:
+    """Identify supplemental parameters whose availability depends on firmware."""
+    source = var.extra.get("SUPPLEMENTAL_SOURCE")
+    if not source:
+        return ""
+    return (f"Firmware dependent. Source {source}; "
+            f"product {var.extra.get('FIRMWARE_PRODUCT', 'unspecified')}, "
+            f"revision {var.extra.get('FIRMWARE_REVISION', 'unspecified')}.")
 
 
 def describe(index: int, subindex: Optional[int] = None) -> str:

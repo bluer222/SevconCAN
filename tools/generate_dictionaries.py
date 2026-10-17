@@ -34,7 +34,7 @@ def main():
     args = parser.parse_args()
     if not 1 <= args.node <= 127:
         parser.error("node must be 1..127")
-    od = load_eds(args.eds) if args.eds else gen4_od()
+    od = load_eds(args.eds) if args.eds else gen4_od(include_supplemental=True)
     configs = asyncio.run(live_configurations(args.channel, args.node, od)) if args.channel else None
     catalog = write_catalog(args.out, od, tpdo_configurations=configs)
     print(f"Wrote {args.out}: {len(catalog['ALL_OBJECTS'])} objects, "
