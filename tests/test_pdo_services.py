@@ -5,12 +5,85 @@ from unittest.mock import AsyncMock
 
 sys.path.insert(0, "src")
 
-from sevcon_can.exceptions import ProtocolError, StateError
+from sevcon_can.exceptions import AccessError, ProtocolError, SdoAbortError, StateError
 from sevcon_can.pdo import decode_pdo
 from sevcon_can.simulator import SIM_PASSWORD, create_pair
 
 
 class TestPdoServices(unittest.TestCase):
+    def test_tpdo_timing_round_trip_stays_disabled_until_complete(self):
+        async def go():
+            dev, sim = create_pair()
+            async with dev, sim:
+                await dev.login(SIM_PASSWORD)
+                original = dev.write_raw
+                timing_writes = []
+
+                async def check_write(index, sub, data):
+                    if index == 0x1800 and sub in (3, 5):
+                        self.assertTrue((await dev.read(0x1800, 1)).raw & 0x80000000)
+                        timing_writes.append((sub, int.from_bytes(data, "little")))
+                    await original(index, sub, data)
+
+                dev.write_raw = check_write
+                for enabled in (True, False):
+                    config = await dev.configure_pdo(
+                        True, 1, [(0x6041, 0, 16)], cob_id=0x180 + dev.node_id,
+                        transmission_type=255, inhibit_time=20, event_timer=250,
+                        enabled=enabled)
+                    self.assertEqual(config["enabled"], enabled)
+                    self.assertEqual(config["inhibit_time"], 20)
+                    self.assertEqual(config["event_timer"], 250)
+                self.assertEqual(timing_writes, [(3, 20), (5, 250)] * 2)
+                config = await dev.configure_pdo(True, 1, [(0x6041, 0, 16)])
+                self.assertEqual(config["inhibit_time"], 20)
+                self.assertEqual(config["event_timer"], 250)
+                self.assertEqual(len(timing_writes), 4)
+        asyncio.run(go())
+
+    def test_timing_rejections_preflight_before_any_write(self):
+        async def go():
+            dev, sim = create_pair()
+            async with dev, sim:
+                await dev.login(SIM_PASSWORD)
+                dev.write_raw = AsyncMock()
+                for field in ("inhibit_time", "event_timer"):
+                    for value, error in ((-1, ValueError), (0x8000, ValueError),
+                                         (1.5, TypeError), ("10", TypeError), (True, TypeError)):
+                        with self.subTest(field=field, value=value), self.assertRaises(error):
+                            await dev.configure_pdo(True, 1, [(0x6041, 0, 16)], **{field: value})
+                    with self.assertRaisesRegex(ValueError, "only supported for TPDOs"):
+                        await dev.configure_pdo(False, 1, [(0x6071, 0, 16)], **{field: 0})
+                # Wire-width validation still runs before disabling when EDS limits are absent.
+                dev.variable(0x1800, 5).high = None
+                with self.assertRaises(ValueError):
+                    await dev.configure_pdo(True, 1, [(0x6041, 0, 16)], event_timer=0x10000)
+                dev.variable(0x1800, 5).access = "ro"
+                with self.assertRaises(AccessError):
+                    await dev.configure_pdo(True, 1, [(0x6041, 0, 16)], event_timer=10)
+                dev.write_raw.assert_not_awaited()
+        asyncio.run(go())
+
+    def test_timing_write_failure_leaves_tpdo_disabled(self):
+        async def go():
+            dev, sim = create_pair()
+            async with dev, sim:
+                await dev.login(SIM_PASSWORD)
+                original = sim._sdo_write
+
+                def reject_timer(index, sub, data):
+                    if (index, sub) == (0x1800, 5):
+                        raise SdoAbortError(0x08000022, index, sub)
+                    return original(index, sub, data)
+
+                sim._server.write = reject_timer
+                with self.assertRaises(SdoAbortError):
+                    await dev.configure_pdo(
+                        True, 1, [(0x6041, 0, 16)], inhibit_time=20, event_timer=250)
+                self.assertFalse((await dev.read_pdo_configuration(True, 1))["enabled"])
+                self.assertEqual((await dev.read(0x1800, 3)).raw, 20)
+        asyncio.run(go())
+
     def test_rtr_types_and_live_request_payload_length(self):
         async def go():
             dev, sim = create_pair()

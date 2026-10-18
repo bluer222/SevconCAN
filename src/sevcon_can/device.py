@@ -653,6 +653,8 @@ class AsyncSevconGen4:
     async def configure_pdo(self, is_tpdo: bool, pdo_number: int, mapping: list, *,
                             cob_id: Optional[int] = None,
                             transmission_type: Optional[int] = None,
+                            inhibit_time: Optional[int] = None,
+                            event_timer: Optional[int] = None,
                             enabled: bool = True) -> Dict[str, Any]:
         """Remap a PDO using the CiA 301 disable/clear order.
 
@@ -662,8 +664,12 @@ class AsyncSevconGen4:
         TPDO configuration follows the loaded EDS's per-entry NMT restrictions;
         operational remapping requires firmware support for dynamic mapping.
         RPDO configuration retains the pre-operational requirement.
+        Optional TPDO timing uses raw integers: inhibit_time in 100 us units
+        and event_timer in milliseconds. Omitted timing values are unchanged.
         """
         comm, map_index = self._pdo_indices(is_tpdo, pdo_number)
+        if not is_tpdo and (inhibit_time is not None or event_timer is not None):
+            raise ValueError("transmit timing is only supported for TPDOs")
         if not is_tpdo and await self.nmt_state(cached=False) != _nmt.STATE_PREOP:
             raise StateError("RPDO configuration requires NMT pre-operational")
         _pdo.validate_mapping(mapping)
@@ -693,16 +699,23 @@ class AsyncSevconGen4:
                     not is_tpdo and transmission_type in (252, 253)):
                 raise ValueError("unsupported PDO transmission type")
             changes.append((comm, 2, transmission_type))
+        for sub, raw in ((3, inhibit_time), (5, event_timer)):
+            if raw is not None:
+                if type(raw) is not int:
+                    raise TypeError("PDO timing values must be integers")
+                changes.append((comm, sub, raw))
         final = selected & ~_pdo.COB_ID_VALID_BIT if enabled else selected | _pdo.COB_ID_VALID_BIT
         changes.append((comm, 1, final | _pdo.COB_ID_VALID_BIT))
         changes.append((comm, 1, final))
+        writes = []
         for index, sub, raw in changes:
             var = self.variable(index, sub)
             var.check_range(raw)
             await self._check_writable(var, raw)
+            writes.append((index, sub, var.encode_raw(raw)))
         # Write the requested COB-ID while still disabled before enabling it.
-        for index, sub, raw in changes:
-            await self.write_raw(index, sub, self.variable(index, sub).encode_raw(raw))
+        for index, sub, data in writes:
+            await self.write_raw(index, sub, data)
         return await self.read_pdo_configuration(is_tpdo, pdo_number)
 
     async def read_pdo_mapping(self, is_tpdo: bool, pdo_number: int) -> list:
