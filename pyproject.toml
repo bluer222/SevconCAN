@@ -8,12 +8,12 @@ version = "0.1.0"
 description = "Async Python CANopen client for Sevcon Gen4 motor controllers (CiA 301/401/402)"
 readme = "README.md"
 requires-python = ">=3.9"
-license = { text = "MIT" }
+license = { text = "AGPL-3.0-only" }
 authors = [{ name = "sevcon-can contributors" }]
 keywords = ["sevcon", "gen4", "canopen", "cia402", "cia401", "socketcan", "motor controller"]
 classifiers = [
   "Programming Language :: Python :: 3",
-  "License :: OSI Approved :: MIT License",
+  "License :: OSI Approved :: GNU Affero General Public License v3",
   "Framework :: AsyncIO",
   "Topic :: Scientific/Engineering :: Interface Engine/Protocol Translator",
 ]
